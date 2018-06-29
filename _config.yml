@@ -1,0 +1,30 @@
+title: "那些年跳過的坑"
+author: "colinback"
+description: "开始尝试自己写点东西..."
+more: "read more »"
+url: "https://colinback.github.io/"
+baseurl: "/szyblogs"
+paginate: 2
+permalink: pretty
+excerpt_separator: "\n\n\n" # two blank lines
+
+style:
+  minimalist: false
+  dark: false
+
+navigation:
+  - index.html
+  - archive.html
+  - about.md
+
+comments:
+#  disqus: "disqus-contrast"
+#  isso: "comments.mysite.org"
+
+links: # see http://fontawesome.io/icons/#brand for all possible icons
+  - github: "https://github.com/colinback/szyblogs"
+  - envelope: "mailto:shizy04@gmail.com"
+
+defaults: [{scope: {path: ""}, values: {layout: "default"}}, {scope: {path: "", type: "posts"}, values: {comments: true}}]
+sass: {style: expanded}
+plugins: [jekyll-feed, jekyll-paginate]
