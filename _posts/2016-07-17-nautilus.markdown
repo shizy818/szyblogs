@@ -1,0 +1,24 @@
+---
+title:  "nautilus icon disappears from unity launcher"
+date:   2016-07-17 23:00:12 +0800
+categories: ubuntu
+---
+
+不知道做了什么误操作，Ubuntu默认文件管理器Files(nautilus)在unity启动器上消失了。从应用程序仍然能够打开Files，
+但是图标立马会从启动栏消失。我不是一个geek，所以还是不习惯完全抛弃图形化界面，于是被这个问题卡了好几天。  
+![image01]({{site.baseurl}}/image/nautilus.gif)
+
+
+最后还是得靠谷歌，百度和必应在这种时候都是辣鸡。
+[http://askubuntu.com/questions/752915/files-icon-disappears-from-the-unity-launcher][bug-link]
+
+一个bug，在我的机器上用如下解决方法是有效的。
+
+{% highlight shell %}
+Unlock "Files" from launcher
+Open a terminal (or ALT+F2)
+Enter nautilus
+Lock that newly spawned launcher to panel
+{% endhighlight %}
+
+[bug-link]:http://askubuntu.com/questions/752915/files-icon-disappears-from-the-unity-launcher

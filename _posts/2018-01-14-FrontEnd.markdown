@@ -1,0 +1,473 @@
+---
+title:  “前端技术综述”
+date:   2018-01-14 08:00:12 +0800
+categories: nodejs express
+---
+
+前端技术更新太快了，现在把前端术语，工具，框架放一块说说。先上一个网上的图：  
+![image01]({{site.baseurl}}/image/frontend-js.jpg)
+
+
+# Grunt vs Gulp
+
+将繁琐的任务自动化并处理任务的依赖关系。优化前端工作流程，比如自动刷新页面，删除上次部署的所有文件，
+复制文件图标到dist文件夹内，压缩css/js、png，编译less/sass, 混淆代码(uglify)等等。
+简单说，就是使用Gulp/Grunt，然后配置插件，之前需要手动敲的命令，就由它帮忙做了。
+
+- Gruntfile.js
+{% highlight javascript %}
+module.exports = function(grunt) {
+grunt.initConfig({
+    concat: {
+        'dist/all.js': ['src/*.js']
+    },
+    uglify: {
+        'dist/all.min.js': ['dist/all.js']
+    },
+    jshint: {
+        files: ['gruntfile.js', 'src/*.js']
+    },
+    watch: {
+        files: ['gruntfile.js', 'src/*.js'],
+        tasks: ['jshint', 'concat', 'uglify']
+    }
+});
+
+// Load Our Plugins
+grunt.loadNpmTasks('grunt-contrib-jshint');
+grunt.loadNpmTasks('grunt-contrib-concat');
+grunt.loadNpmTasks('grunt-contrib-uglify');
+grunt.loadNpmTasks('grunt-contrib-watch');
+
+
+// Register Default Task
+grunt.registerTask('default', ['jshint', 'concat', 'uglify']);
+};
+{% endhighlight %}
+
+- Gulpfile.js
+{% highlight javascript %}
+var gulp = require('gulp');
+var jshint = require('gulp-jshint');
+var concat = require('gulp-concat');
+var rename = require('gulp-rename');
+var uglify = require('gulp-uglify');
+
+// Lint JS
+gulp.task('lint', function() {
+return gulp.src('src/*.js')
+    .pipe(jshint())
+    .pipe(jshint.reporter('default'));
+});
+
+// Concat & Minify JS
+gulp.task('minify', function(){
+return gulp.src('src/*.js')
+    .pipe(concat('all.js'))
+    .pipe(gulp.dest('dist'))
+    .pipe(rename('all.min.js'))
+    .pipe(uglify())
+    .pipe(gulp.dest('dist'));
+});
+
+// Watch Our Files
+gulp.task('watch', function() {
+gulp.watch('src/*.js', ['lint', 'minify']);
+});
+
+// Default
+gulp.task('default', ['lint', 'minify', 'watch']);
+{% endhighlight %}
+
+Gulp的优势：
+* Gulp是一个基于流的构建系统，使用代码优于配置的策略。
+* Gulp的插件更纯粹，单一的功能，并坚持一个插件只做一件事。
+* Gulp更像是写代码，而且Gulp遵循CommonJS规范，因此跟写Node程序没有差别。
+* Gulp没有产生中间文件，使用Grunt的I/O过程中会产生一些中间态的临时文件，一些任务生成临时文件，其它任务可能会基于临时文件再做处理并生成最终的构建后文件。
+而使用Gulp的优势就是利用流的方式进行文件的处理，通过管道将多个任务和操作连接起来，因此只有一次I/O的过程，流程更清晰，更纯粹。
+
+# CommonJS vs AMD vs CMD
+
+- CommonJS  
+CommonJS用于NodeJS服务器端，是一个同步过程，只有加载完成才能执行后面的操作。因为在服务器读取模块都是在本地磁盘，加载速度很快。
+CommonJS用module.exports导出函数或者变量，然后用require导入。
+{% highlight javascript %}
+var clock = require('clock')
+clock.start();
+{% endhighlight %}
+
+- AMD vs CMD  
+在浏览器端，需要AMD/CMD异步加载模块。RequireJs/SeaJS以模块化的形式组织js代码，用来管理页面中使用的js库之间的依赖关系，可以按需、并行、延迟加载js库。
+这是是一种在线"编译"模块的方案，相当于在页面上加载一个CMD/AMD解释器，这样浏览器就认识了define、exports、module这些东西。也就实现了模块化。
+  + AMD(Asynchronous Module Definition)是RequireJS在推广过程中对模块定义的规范化产出。
+  + CMD(Common Module Definition)是SeaJS在推广过程中对模块定义的规范化产出。
+{% highlight javascript %}
+// AMD
+require(['clock'],function(clock){
+  clock.start();
+});
+
+// CMD
+define(function(require, exports, module) {
+   var clock = require('clock');
+   clock.start();
+});
+{% endhighlight %}
+
+AMD和CMD最大的区别是对依赖模块的执行时机处理不同，而不是加载的时机或者方式不同，二者皆为异步加载模块。AMD依赖前置，js可以方便知道依赖模块是谁，
+立即加载；而CMD则是依赖就近，用的时候再require。
+
+# Bower vs NPM vs Yarn
+
+- Bower  
+twitter推出的前端模块管理工具。bower的安装流程基本上可以简单认为是将注册的Git地址中的特定tag拷贝一份到你本地的bower_components目录中。
+任何类型的资源文件都可以打包为一个模块，并且可以使用任何规范（例如AMD，CommonJS等)。Bower的依赖是扁平的。
+
+- Npm  
+针对node模块，原生支持commonJS，其依赖是树状的。项目中用到A，B，C三个模块，可以分别依赖不同版本的lodash，而互不影响。
+
+- Yarn  
+只是一个新的CLI工具，拉取的packages依然来自npm仓库。Yarn的好处在于：
+1. 离线模式：已经安装过的包不再从网络下载
+2. 引入yarn.lock文件记录安装的所有大大小小软件包的版本号，这样yarn install可以保证所有人安装的依赖都是一致的。
+3. 扁平模式：当关联依赖中包括对某个软件包的重复引用，在实际安装时将尽量避免重复的创建。
+
+# AngularJS vs ReactJS vs Backbone vs Knockout vs Vue.js vs Ember vs ...
+前端MVC框架，支持依赖注入，双向绑定等等。这个话题太大，略过。
+
+# EJS vs Jade vs Dust vs Handlebars vs Mustache vs ...
+HTML模板, 种类繁多，没有研究。
+
+# Sass vs Less
+CSS预处理器, 像代码一样处理CSS（sorry到目前为止仍然是HTML/CSS小白）
+
+# CSS Module
+它不是将CSS改造成编程语言，而是加入了局部作用域和模块依赖，这恰恰是网页组件最急需的功能。
+
+- 局部作用域  
+CSS的规则都是全局的，任何一个组件的样式规则，都对整个页面有效。产生局部作用域的唯一方法，就是使用一个独一无二的class的名字，不会与其他选择器重名。
+这就是 CSS Modules 的做法。
+
+```javascript
+import React from 'react';
+import style from './App.css';
+
+export default () => {
+  return (
+    <h1 className={style.title}>
+      Hello World
+    </h1>
+  );
+};
+```
+
+我们将样式文件App.css输入到style对象，然后引用style.title代表一个class。构建工具会将类名style.title编译成一个哈希字符串；
+App.css也同时会被编译。这样一来，这个类名就变成独一无二了，只对App组件有效。
+
+```javascript
+// App.js
+<h1 class="_3zyde4l1yATCOkgn-DBWEL">
+  Hello World
+</h1>
+
+// App.css
+._3zyde4l1yATCOkgn-DBWEL {
+  color: red;
+}
+```
+
+- 全局作用域  
+CSS Modules 允许使用:global(.className)的语法，声明一个全局规则。凡是这样声明的class，都不会被编译成哈希字符串。
+
+```javascript
+// App.js
+import React from 'react';
+import styles from './App.css';
+
+export default () => {
+  return (
+    <h1 className="title">
+      Hello World
+    </h1>
+  );
+};
+
+// App.css
+.title {
+  color: red;
+}
+
+:global(.title) {
+  color: green;
+}
+}
+```
+
+几年前一个标准的前端项目就是Grunt + Bower + RequireJS + AngularJS。
+
+# Yo
+
+当打算开始开发一个 Web 应用时，初始的目录结构和基础文件很重要，因为这些是应用开发的基础。Yo 是一个Web应用的架构（scaffolding）工具。它提供了非常多的模板，
+用来生成不同类型的 Web 应用。这些模板称为生成器（generator）。社区也贡献了非常多的生成器，适应于各种不同的场景。通过 Yo 生成的应用使用 Grunt 来进行构建，
+使用 Bower 进行依赖管理。
+
+以基本的 Web 应用生成器为例，只需要使用“yo webapp”命令就可以生成一个基本的 Web 应用的骨架。运行该命令之后，会有一些提示信息来对生成的应用进行基本的配置，
+可以选择需要包含的功能。默认生成的 Web 应用中包含了 HTML5 Boilerplate、jQuery、Modernizr 和 Twitter Bootstrap 等。只需要一个简单的命令，
+就可以生成一个能够直接运行的 Web 应用。后续的开发可以基于生成的应用骨架来进行。这在很大程度上简化了应用的开发工作，尤其是某些原型应用。
+
+# Yeoman
+
+Yeoman 的重要之处在于把各种不同的工具整合起来，形成一套完整的前端开发的工作流程。使用 Yeoman 之后的开发流程可以分成如下几个基本的步骤。
+
+* 在开发的最初阶段需要确定前端的技术选型。这包括选择要使用的前端框架。在绝大部分的 Web 应用开发中，都需要第三方库的支持。有的应用可能只使用 jQuery，
+有的应用会增加 Twitter Bootstrap 库，而有的应用则会使用 AngularJS。在确定了技术选型之后，就可以在 Yeoman 中查找相应的生成器插件。一般来说，
+基于常见库的生成器都可以在社区中找到。比如使用 AngularJS、Backbone、Ember 和 Knockout 等框架的生成器。
+
+* 所有的生成器都使用npm来进行安装。生成器的名称都使用“generator-”作为前缀，如“generator-angular”、“generator-backbone”和“generator-ember”等。
+安装完成之后，通过 yo 命令就可以生成应用的骨架代码，如“yo angular”用来生成基于 AngularJS 的应用骨架。
+
+* 生成的应用骨架中包含了一个可以运行的基本应用。只需要通过“grunt server”命令来启动服务器就可以查看。应用的骨架搭建完成之后，把生成的代码保存到源代码仓库中。
+团队可以在这个基础上进行开发。开发中的一些常用任务可以通过 Yeoman 来简化。当需要引入第三方库时，通过 Bower 来搜索并添加。
+
+# Browserify vs Webpack
+
+简单的说，这俩工具的目的是将模块打包到浏览器的运行环境。
+
+处理JavaScript模块一直是一个大问题，因为这个语言在ES6之前没有这方面的概念, 因此提出了各种解决方案，比如AMD和CMD。
+在实践中只使用CommonJS(Node.js所采用的格式）会比较有帮助，而让工具去处理剩下的事情。它的优势是你可以发布到NPM上来避免重新发明轮子。
+
+由于没有使用过Browserify，所以主要聊一聊Webpack。Webpack的想法是通过入口JS代码(可以是多个？)分析所有的依赖，然后把他们通过加载器把代码兼容地输出到
+静态资源中(bundle.js)。有相互依赖的模块都在一个文件里，我们就不用担心A.js依赖于B.js，但是A模块却比B模块先从服务器端下载加载完成。
+
+# 打包bundle.js
+下面用参考文档里一个例子来说明Webpack打包过程。假如我们有index.js/multiple.js/sum.js三个JS文件。multiple依赖于sum，而
+index依赖于multiple和sum。代码如下：
+
+```javascript
+// sum.js
+var sum = function (a, b) {
+    return a + b;
+};
+module.exports = sum;
+
+// multiply.js
+var sum = require('./sum');
+
+var multiply = function (a, b) {
+    var total = 0;
+    for (var i = 0; i < b; i++) {
+        total = sum(a, total);
+    }
+    return total;
+};
+module.exports = multiply;
+
+// index.js - our application logic
+var multiply = require('./multiply');
+var sum = require('./sum');
+
+var totalMultiply = multiply(5, 3);
+var totalSum = sum(5, 3);
+
+console.log('Product of 5 and 3 = ' + totalMultiply);
+console.log('Sum of 5 and 3 = ' + totalSum);
+```
+```html
+<!-- index.html - our entry point to our application -->
+<html>
+<head>
+    <script src="src/sum.js"></script>
+    <script src="src/multiply.js"></script>
+    <script src="src/index.js"></script>
+</head>
+</html>
+```
+
+配置webpack.config.js文件
+
+```javascript
+var path = require('path');
+module.exports = {
+    entry: "./src/index.js",
+    output: {
+        path: path.resolve(__dirname, './dist/'),
+        filename: "bundle.js"
+    }
+};
+```
+
+我们得到bundle.js, 里面包含了index.js/multiple.js/sum.js。同时HTML需要对script做一点改动。
+
+```javascript
+// the webpack bootstrap
+(function (modules) {
+    // The module cache
+    var installedModules = {};
+
+    // The require function
+    function __webpack_require__(moduleId) {
+        // Check if module is in cache
+        // Create a new module (and put it into the cache)
+        // Execute the module function
+        // Flag the module as loaded
+        // Return the exports of the module
+    }
+
+
+    // expose the modules object (__webpack_modules__)
+    // expose the module cache
+    // Load entry module and return exports
+    return __webpack_require__(0);
+})
+/************************************************************************/
+([
+    // index.js - our application logic
+    /* 0 */
+    function (module, exports, __webpack_require__) {
+
+        var multiply = __webpack_require__(1);
+        var sum = __webpack_require__(2);
+
+        var totalMultiply = multiply(5, 3);
+        var totalSum = sum(5, 3);
+
+        console.log('Product of 5 and 3 = ' + totalMultiply);
+        console.log('Sum of 5 and 3 = ' + totalSum);
+    },
+    // multiply.js
+    /* 1 */
+    function (module, exports, __webpack_require__) {
+
+        var sum = __webpack_require__(2);
+
+        var multiply = function (a, b) {
+            var total = 0;
+            for (var i = 0; i < b; i++) {
+                total = sum(a, total);
+            }
+            return total;
+        };
+        module.exports = multiply;
+    },
+    // sum.js
+    /* 2 */
+    function (module, exports) {
+
+        var sum = function (a, b) {
+            return a + b;
+        };
+        module.exports = sum;
+    }
+]);
+```
+```html
+<!-- index.html - our entry point to our application -->
+<html>
+<head>
+    <script src="./dist/bundle.js"></script>
+</head>
+</html>
+```
+
+# Babel loader
+```javascript
+module.exports = {
+  entry: [
+    "./src/index.js",
+    "babel-polyfill"
+  ],
+  ......
+  module: {
+    loaders: [
+      {
+        test: /\.js[x]?$/,
+        exclude: /node_modules/,
+        loader: 'babel-loader?presets[]=es2015&presets[]=react'
+      },
+    ]
+  }
+};
+```
+
+将ES6或者JSX语法转译成浏览器能识别的ES5语法。
+
+但是Babel默认只转换新的JavaScript句法（syntax），而不转换新的API，比如Iterator、Generator、
+Set、Maps、Proxy、Reflect、Symbol、Promise等全局对象，以及一些定义在全局对象上的方法
+（比如Object.assign）都不会转码。此时需要引入babel-polyfill。
+
+# CSS loader & CSS module & Styple loader
+
+```javascript
+var autoprefixer = require("autoprefixer");
+module.exports = {
+  ......
+  module: {
+    loaders: [
+      {
+        test: /\.s*css$/,
+        use: [
+          { loader: "style-loader!css-loader?modules" } ,
+          { loader: "postcss-loader", options: { plugins: [ require("autoprefixer") ] } },
+          { loader: "sass-loader" }
+      },
+    ]
+  }
+};
+```
+
+* postcss-loader负责把CSS代码解析成抽象语法树结构，再交给插件处理。常用插件autoprefixer用于补全浏览器兼容性前缀
+* sass-loader将scss编译为css。
+* css-loader?modules，在css-loader后面加了一个查询参数modules，表示打开 CSS Modules 功能。
+* style-loader使得可以在页面中对象化处理css，比如styles.bannerCss.
+
+
+# Code Splitting
+如果觉得bundle.js太大，可以在js文件里定义require.ensure，Webpack将依赖包从bundle.js拆出独立成Chuck文件。如果用了Server Rendering
+技术(isomorphic app)，还可以用[node-ensure](http://npm.taobao.org/package/node-ensure)。
+
+# 插件
+```javascript
+var webpack = require('webpack');
+var uglifyJsPlugin = webpack.optimize.UglifyJsPlugin;
+var ExtractTextPlugin = require("extract-text-webpack-plugin");
+var
+module.exports = {
+  ......
+  module: {
+    loaders: [
+      {
+        test: /\.s[a|c]ss$/,
+        loader: ExtractTextPlugin.extract('style-loader', '!css!sass')
+      }
+    ]
+  },
+  plugins: [
+    new webpack.HotModuleReplacementPlugin(),
+    new ExtractTextPlugin("styles.css"),
+    new uglifyJsPlugin({
+      compress: {
+        warnings: false
+      }
+    })
+  ]
+};
+```
+
+1. uglifyJsPlugin：混淆前端JS代码
+2. HotModuleReplacementPlugin： 不需要页面重新加载动态替换模块
+3. ExtractTextPlugin: 将css从js文件中剥离出来
+
+参考列表:  
+[JS模块规范-简书][简书JS模块规范]  
+[Gulp vs Grunt][SegmentFault-Gulp-Grunt]  
+[Grunt+Bower+RequireJS+AngularJS][grunt-bower-requirejs-angular]  
+[IBM DeveloperWorks - Yeoman][Yeoman-developerWorks]  
+[Webpack Tutorial: Understanding How it Works][webpack-understanding]  
+[阮一峰CSS Module用法教程][ryf-css-module]
+
+[简书JS模块规范]:https://www.jianshu.com/p/09ffac7a3b2c
+[SegmentFault-Gulp-Grunt]:https://segmentfault.com/a/1190000002491282
+[grunt-bower-requirejs-angular]:http://ju.outofmemory.cn/entry/85833
+[Yeoman-developerWorks]:https://www.ibm.com/developerworks/cn/web/1402_chengfu_yeoman/index.html
+[webpack-understanding]:https://www.ag-grid.com/ag-grid-understanding-webpack/
+[ryf-css-module]:http://www.ruanyifeng.com/blog/2016/06/css_modules.html
