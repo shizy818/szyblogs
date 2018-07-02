@@ -1,7 +1,7 @@
 ---
 title:  “loopback & Hibernate relation”
 date:   2016-09-10 08:00:12 +0800
-categories: loopback
+categories: nodejs express
 ---
 
 在loopback的框架里自带了ORM机制，即对Model和Database做了一一对应，不再需要开发人员自己动手写SQL语句。

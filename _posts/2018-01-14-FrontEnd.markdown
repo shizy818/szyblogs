@@ -1,7 +1,7 @@
 ---
 title:  “前端技术综述”
 date:   2018-01-14 08:00:12 +0800
-categories: nodejs express
+categories: frontend
 ---
 
 前端技术更新太快了，现在把前端术语，工具，框架放一块说说。先上一个网上的图：  

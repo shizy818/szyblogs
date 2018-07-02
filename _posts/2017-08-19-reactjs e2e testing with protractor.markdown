@@ -1,7 +1,7 @@
 ---
 title:  “Reactjs e2e testing with protractor”
 date:   2017-08-19 08:00:12 +0800
-categories: Reactjs testing
+categories: reactjs testing
 ---
 
 公司Reactjs项目没有做成普通的SPA(Single Page Application)，而是Sever Rendering方式。每次浏览器请求或刷新url，

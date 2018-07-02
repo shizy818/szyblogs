@@ -1,7 +1,7 @@
 ---
 title:  “Regular Expression Group”
 date:   2016-08-10 08:00:12 +0800
-categories: regular expression
+categories: regexp
 ---
 
 半路出家，一直到毕业其实都感觉不到算是计算机的人了。遥记得某次去面试的时候被问到写一个正则表达式，一脸懵逼。

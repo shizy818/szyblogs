@@ -1,7 +1,7 @@
 ---
 title:  "nodejs debug"
 date:   2016-07-29 12:00:12 +0800
-categories: nodejs javascript
+categories: javascript
 ---
 
 大部分时间直接用`console.log`或者`logger.info`调试代码，但是还是有时候需要跟步调试。公司没有钱，

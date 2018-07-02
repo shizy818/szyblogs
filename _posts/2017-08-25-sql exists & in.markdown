@@ -1,7 +1,7 @@
 ---
 title:  “SQL EXISTS & IN 语法”
 date:   2017-08-25 08:00:12 +0800
-categories: SQL
+categories: sql
 ---
 
 # EXISTS

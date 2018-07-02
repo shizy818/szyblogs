@@ -1,6 +1,6 @@
 title: "那些年跳過的坑"
 author: "colinback"
-description: "开始尝试自己写点东西..."
+description: "好记性不如烂笔头"
 more: "read more »"
 url: "https://colinback.github.io/"
 baseurl: "/szyblogs"
@@ -24,6 +24,8 @@ comments:
 links: # see http://fontawesome.io/icons/#brand for all possible icons
   - github: "https://github.com/colinback/szyblogs"
   - envelope: "mailto:shizy04@gmail.com"
+
+paginate: 5
 
 defaults: [{scope: {path: ""}, values: {layout: "default"}}, {scope: {path: "", type: "posts"}, values: {comments: true}}]
 sass: {style: expanded}
