@@ -1,5 +1,5 @@
 ---
-title:  “React ComponentWillUnmount”
+title:  “React ComponentWillMount & ComponentWillUnmount”
 date:   2018-03-25 08:00:12 +0800
 categories: frontend
 ---
@@ -38,3 +38,10 @@ handleCleanup() {
 ```
 
 然而或许这样还是无法保证清理工作一定能够触发，比如浏览器奔溃的情况；此时可以通过服务器端定期检查来做清理工作。
+
+# ComponentWillMount + Server Rendering
+
+有一个问题是在哪个函数里向后端抓取数据：ComponentWillMount还是ComponentDidMount? 结论是一般在ComponentDidMount中负责抓取数据，因为如果采用Server Rendering方式，ComponentWillMount会在后端和前端执行两次，一般都不需要这样。
+
+参考：  
+[Where to Fetch Data: componentWillMount vs componentDidMount](https://daveceddia.com/where-fetch-data-componentwillmount-vs-componentdidmount/)
