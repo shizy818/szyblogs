@@ -4,7 +4,7 @@ description: "好记性不如烂笔头"
 more: "read more »"
 url: "https://colinback.github.io/"
 baseurl: "/szyblogs"
-paginate: 2
+paginate: 5
 permalink: pretty
 excerpt_separator: "\n\n\n" # two blank lines
 
@@ -25,8 +25,9 @@ links: # see http://fontawesome.io/icons/#brand for all possible icons
   - github: "https://github.com/colinback/szyblogs"
   - envelope: "mailto:shizy04@gmail.com"
 
-paginate: 5
-
 defaults: [{scope: {path: ""}, values: {layout: "default"}}, {scope: {path: "", type: "posts"}, values: {comments: true}}]
 sass: {style: expanded}
-plugins: [jekyll-feed, jekyll-paginate]
+plugins: [jekyll-feed, jekyll-paginate, jekyll-katex]
+
+# Latex支持
+markdown: kramdown
