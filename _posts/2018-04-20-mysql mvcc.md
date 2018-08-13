@@ -12,6 +12,9 @@ MVCC（Mutiple Version Concurrency Control)，最大的好处是实现非锁定�
 读取操作不会等待行上锁的释放，而是去读取行的一个快照数据。  
 ![image01]({{site.baseurl}}/image/mysql-nonblocking-read.jpg)
 
+> 有个相似的术语叫半一致读（semi-consistent read)，说的是在READ COMMITTED隔离级别下，一个UPDATE语句，
+> 如果读到一条已经加锁的记录，InnoDB返回记录最近提交的版本，由Mysql上层判断是否满足更新条件；如果条件满足，
+> Mysql重新发起一次读操作，加锁读取该行的最新版本。
 
 在不同的事务隔离级别下，对于快照的定义并不相同。
 - READ COMMITTED  

@@ -216,16 +216,17 @@ Record lock, heap no 1 PHYSICAL RECORD: n_fields 1; compact format; info bits 0
 
 加锁流程如下：
 
-TA加X记录锁 `LOCK_X | LOCK_REC_NOT_GAP` | |
-| 主键冲突，TB等待S锁 `LOCK_S | LOCK_GAP | LOCK_REC` |
-| | TC等待S锁 `LOCK_S | LOCK_GAP | LOCK_REC`
+TA加隐式锁锁 | |
+| TB将隐式锁转换为显式锁`LOCK_REC | LOCK_X | LOCK_REC_NOT_GAP`
+| 主键冲突，TB等待S锁 `LOCK_REC | LOCK_S | LOCK_ORDINARY` |
+| | TC等待S锁 `LOCK_REC | LOCK_S | LOCK_ORDINARY`
 TA回滚，释放X记录锁 | |
-| TB创建S锁 `LOCK_S | LOCK_GAP | LOCK_REC` |
-| | TC创建S锁 `LOCK_S | LOCK_GAP | LOCK_REC` |
+| TB创建S锁 `LOCK_REC | LOCK_S | LOCK_ORDINARY` |
+| | TC创建S锁 `LOCK_REC | LOCK_S | LOCK_ORDINARY` |
 | TB请求X插入意向锁 `LOCK_X | LOCK_GAP | LOCK_INSERT_INTENTION`
 | | TC请求X插入意向锁 `LOCK_X | LOCK_GAP | LOCK_INSERT_INTENTION`
 
-TB和TC请求X插入意向锁均需要等待对方释放S区间锁，因此造成死锁。值得思考的一个问题是为什么Mysql不引入
+TB和TC请求插入意向锁均需要等待对方释放Next-Key锁，因此造成死锁。值得思考的一个问题是为什么Mysql不引入
 更新锁（U锁）？
 
 参考:  

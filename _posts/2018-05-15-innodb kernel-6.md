@@ -36,7 +36,7 @@ rem0rec.cc | 物理记录实现
 | 1 | 未使用
 deleted_flag | 1 | 记录删除标记
 min_rec_flag | 1 | B+树中非叶子节点最小记录标记
-n_owned | 4 | 该记录所拥有记录数量
+n_owned | 4 | 该记录对应槽所拥有记录数量
 heap_no | 13 | 该记录在堆中的序号
 record_type | 3 | 000=普通 001=B+树节点指针 010=infimum 011=supremum 1xx=保留
 next_recorder | 16 | 页中下一条记录的相对位置
@@ -188,8 +188,9 @@ InnoDB引擎中，使用数据结构read_view_t来判断事务应该读取记录
 :----|:----|:----
 type | ulint | VIEW_NORMAL或VIEW_HIGH_GRANULARITY
 undo_no | undo_no_t | VIEW_HIGH_GRANULARITY类型下的undo日志号，因为HIGH GRANULARITY限制下读操作看不到read_view_t创建后当前事务的改动。
-low_limit_no | trx_id_t | 不能看见行版本的最小事务ID
-up_limit_id | trx_id_t |  能看见行版本的最大事务ID
+low_limit_no | trx_id_t | 提交时间早于此值的事务，可以被purge线程回收
+low_limit_id | trx_id_t | 大于等于此值的事务（trx->id >= low_limit_id)，当前ReadView均不可见；low_limit_id=trx_sys->max_trx_id
+up_limit_id | trx_id_t |  小于此值的事务（trx->id < up_limit_id），当前ReadView一定可见；up_limit_id=ReadView创建时系统最小活跃事务ID
 n_trx_ids | ulint | 活跃事务数量
 trx_ids | trx_id_t* | 数组，表示事务开始时存在的其他事务
 creator_trx_id | trx_id_t | 哪个事务创建了当前read_view_t结构
