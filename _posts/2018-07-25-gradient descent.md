@@ -14,7 +14,7 @@ categories: machine learning
 损失函数（Loss Function）是用来估量模型的预测值和真实值的不一致程度。损失函数越小，模型的鲁棒性就越好。经验风险函数通常包括经验风险项（损失函数均值）和正则项（惩罚项）。
 
 $$
-\theta^* = \arg \min_{\theta} \sum \limits_{i=1}^N L(y_i, f(x_i;\theta)) + \lambda \Phi(\theta)
+\theta^* = \arg \min_{\theta} \sum \limits_{i=1}^m L(y^{(i)}, f(x^{(i)};\theta)) + \lambda \Phi(\theta)
 $$
 
 常用的损失函数：
@@ -61,7 +61,7 @@ $$
     逻辑回归的目标式：
 
     $$
-    J(\theta) = -\frac{1}{m} \sum_{i=1}^m [y^i \log h_\theta(x^i) + (1-y^i) \log (1 - h_\theta(x^i))]
+    J(\theta) = -\frac{1}{m} \sum_{i=1}^m [y^{(i)} \log h_\theta(x^{(i)}) + (1-y^{(i)}) \log (1 - h_\theta(x^{(i)}))]
     $$
 
 - 指数损失函数（Adaboost）
@@ -89,7 +89,7 @@ $$
 $$
 \begin{aligned}
 &h_\theta(x) = \sum_{k=0}^n \theta_kx_k = \theta^Tx \\
-&J(\theta) = \frac{1}{2} \sum_{i=1}^m(h_\theta(x^i)-y^i)^2
+&J(\theta) = \frac{1}{2} \sum_{i=1}^m(h_\theta(x^{(i)})-y^{(i)})^2
 \end{aligned}
 $$
 
@@ -105,29 +105,29 @@ $$
     
     $$
     \begin{aligned}
-    \frac{\partial}{\partial \theta_j} J(\theta) &= \frac{\partial}{\partial \theta_j} \frac{1}{2} \sum_{i=1}^m(h_\theta(x^i)-y^i)^2 \\
-    &=2 \centerdot \frac{1}{2} \sum_{i=1}^m(h_\theta(x^i)-y^i) \centerdot \frac{\partial}{\partial \theta_j} (h_\theta(x^i)-y^i）\\
-    &=\sum_{i=1}^m(h_\theta(x^i)-y^i) \centerdot \frac{\partial}{\partial \theta_j} (\sum_{k=0}^n \theta_kx_k^i - y^i）\\
-    &=\sum_{i=1}^m(h_\theta(x^i)-y^i)x_j^i
+    \frac{\partial}{\partial \theta_j} J(\theta) &= \frac{\partial}{\partial \theta_j} \frac{1}{2} \sum_{i=1}^m(h_\theta(x^{(i)})-y^{(i)})^2 \\
+    &=2 \centerdot \frac{1}{2} \sum_{i=1}^m(h_\theta(x^{(i)})-y^{(i)}) \centerdot \frac{\partial}{\partial \theta_j} (h_\theta(x^{(i)})-y^{(i)}）\\
+    &=\sum_{i=1}^m(h_\theta(x^{(i)})-y^{(i)}) \centerdot \frac{\partial}{\partial \theta_j} (\sum_{k=0}^n \theta_kx_k^{(i)} - y^{(i)}）\\
+    &=\sum_{i=1}^m(h_\theta(x^{(i)})-y^{(i)})x_j^{(i)}
     \end{aligned}
     $$
 
     最终得到的结果是：
 
     $$
-    \theta_j := \theta_j - \alpha \sum_{i=1}^m(h_\theta(x^i)-y^i)x_j^i
+    \theta_j := \theta_j - \alpha \sum_{i=1}^m(h_\theta(x^{(i)})-y^{(i)})x_j^{(i)}
     $$
 
     上述公式更新参数时使用了所以的样本点的梯度数据进行更新，所以又称为批量梯度下降法（Batch Gradient Descent）。批量梯度下降在每次循环中都使用所有样本点，在大样本数据下，训练速度较慢。有两个变种分别是随机梯度下降法（Stochastic Gradient Descent）和小批量梯度下降法（Mini-batch Gradient Descent）。随机梯度下降法在一次循环中仅选择一个样本点i进行更新：
 
     $$
-    \theta_j := \theta_j - \alpha (h_\theta(x^i)-y^i)x_j^i
+    \theta_j := \theta_j - \alpha (h_\theta(x^{(i)})-y^{(i)})x_j^{(i)}
     $$
 
     小批量梯度下降法是一个折中方案，对应m个样本，选取其中的n个样本点进行更新
 
     $$
-    \theta_j := \theta_j - \alpha \sum_{i=t}^{t+n-1}(h_\theta(x^i)-y^i)x_j^i
+    \theta_j := \theta_j - \alpha \sum_{i=t}^{t+n-1}(h_\theta(x^{(i)})-y^{(i)})x_j^{(i)}
     $$
 
 - 矩阵解法
@@ -144,7 +144,7 @@ $$
     \right ]
     $$
 
-    假设有m个样本数据，$$ x^i $$是n维列向量，其倒置$$ (x^i)^T $$作为矩阵$$ X $$的第i行:
+    假设有m个样本数据，$$ x^{(i)} $$是n维列向量，其倒置$$ (x^{(i)})^T $$作为矩阵$$ X $$的第i行:
 
     $$
     X_{m \times n} = \left [
@@ -174,7 +174,7 @@ $$
     J(\theta) = \frac{1}{2}(X\theta - \vec{y})^T(X\theta - \vec{y})
     $$
 
-    矩阵求导，应用迹的特性：
+    矩阵求导（应用了迹的定理，参考最后链接）：
 
     $$
     \begin{aligned}
@@ -200,19 +200,19 @@ $$
 - L2-norm/Ridge回归
 
     $$
-    J(\theta) = \frac{1}{2} \sum_{i=1}^m(h_\theta(x^i)-y^i)^2 + \frac{\lambda}{2} \sum_{j=1}^n \theta_j^2
+    J(\theta) = \frac{1}{2} \sum_{i=1}^m(h_\theta(x^{(i)})-y^{(i)})^2 + \frac{\lambda}{2} \sum_{j=1}^n \theta_j^2
     $$
 
     修正后的梯度下降公式为：
 
     $$
-    \theta_j := \theta_j(1 - \alpha \lambda) - \alpha \sum_{i=1}^m(h_\theta(x^i)-y^i)x_j^i
+    \theta_j := \theta_j(1 - \alpha \lambda) - \alpha \sum_{i=1}^m(h_\theta(x^{(i)})-y^{(i)})x_j^{(i)}
     $$
 
 - L1-norm/Lasso回归
 
     $$
-    J(\theta) = \frac{1}{2} \sum_{i=1}^m(h_\theta(x^i)-y^i)^2 + \frac{\lambda}{2} \sum_{j=1}^n | \theta_j |
+    J(\theta) = \frac{1}{2} \sum_{i=1}^m(h_\theta(x^{(i)})-y^{(i)})^2 + \frac{\lambda}{2} \sum_{j=1}^n | \theta_j |
     $$
 
     Lasso回归的损失函数不是连续可导，在mllib L1Updater里用了一个soft threasholding的方法处理参数更新。
@@ -220,7 +220,7 @@ $$
 - Elastic Net
 
     $$
-    J(\theta) = \frac{1}{2} \sum_{i=1}^m(h_\theta(x^i)-y^i)^2 + \frac{\lambda}{2} \left (\rho \sum_{j=1}^n | \theta_j | + (1 - \rho) \sum_{j=1}^n \theta_j^2 \right)
+    J(\theta) = \frac{1}{2} \sum_{i=1}^m(h_\theta(x^{(i)})-y^{(i)})^2 + \frac{\lambda}{2} \left (\rho \sum_{j=1}^n | \theta_j | + (1 - \rho) \sum_{j=1}^n \theta_j^2 \right)
     $$
 
 

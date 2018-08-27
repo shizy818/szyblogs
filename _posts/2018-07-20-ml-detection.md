@@ -52,21 +52,21 @@ $$
 
     $$
     \begin{aligned}
-    \mathcal{L}(\mu,\Sigma)&=\prod \limits_{i=1}^m\frac{1}{(2\pi)^{d/2}\left | \Sigma \right|^{1/2}}\exp\left ( -\frac{1}{2}(x^i-\mu)^T\Sigma^{-1}(x^i-\mu) \right ) \\
-    &=\frac{1}{(2\pi)^{nd/2}}\prod \limits_{i=1}^m\frac{1}{\left | \Sigma \right|^{1/2}}\exp\left ( -\frac{1}{2}(x^i-\mu)^T\Sigma^{-1}(x^i-\mu) \right )
+    \mathcal{L}(\mu,\Sigma)&=\prod \limits_{i=1}^m\frac{1}{(2\pi)^{d/2}\left | \Sigma \right|^{1/2}}\exp\left ( -\frac{1}{2}(x^{(i)}-\mu)^T\Sigma^{-1}(x^{(i)}-\mu) \right ) \\
+    &=\frac{1}{(2\pi)^{md/2}}\prod \limits_{i=1}^m\frac{1}{\left | \Sigma \right|^{1/2}}\exp\left ( -\frac{1}{2}(x^{(i)}-\mu)^T\Sigma^{-1}(x^{(i)}-\mu) \right )
     \end{aligned}
     $$
   
     用样本均值$$ \bar{x}=\frac{x^1+ \cdots +x^n}{n} $$估计$$ \mu $$，于是我们的目标是最大化下面的函数：
 
     $$
-    \mathcal{L}(\bar{x},\Sigma) \propto \frac{1}{\left | \Sigma \right |^{n/2}} \exp\left ( -\frac{1}{2}\sum_{i=1}^n(x^i-\bar{x})^T\Sigma^{-1}(x^i-\bar{x}) \right )
+    \mathcal{L}(\bar{x},\Sigma) \propto \frac{1}{\left | \Sigma \right |^{m/2}} \exp\left ( -\frac{1}{2}\sum_{i=1}^n(x^{(i)}-\bar{x})^T\Sigma^{-1}(x^{(i)}-\bar{x}) \right )
     $$
 
     省略掉后面的证明（因为有部分没看懂），结论就是：
 
     $$
-    \Sigma=\frac{1}{n}\sum_{i=1}^n(x^i-\bar{x})(x^i-\bar{x})^T
+    \Sigma=\frac{1}{m}\sum_{i=1}^m(x^{(i)}-\bar{x})(x^{(i)}-\bar{x})^T
     $$
 
 2. 最小协方差行列式（Minimum Covariance Determinant）
@@ -79,7 +79,7 @@ $$
 估计均值和协方差矩阵，然后通过马氏距离，我们可以预测某个新观测值是否是异常值。
 
 $$
-d_{\mu,\Sigma}(x^i)^2=(x^i-\hat{\mu})^T\hat{\Sigma}^{-1}(x^i-\hat{\mu})
+d_{\mu,\Sigma}(x^{(i)})^2=(x^{(i)}-\hat{\mu})^T\hat{\Sigma}^{-1}(x^{(i)}-\hat{\mu})
 $$
 
 ## 孤立森林（Isolation Forest）
