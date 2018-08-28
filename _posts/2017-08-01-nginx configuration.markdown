@@ -64,9 +64,9 @@ http {
 浏览器跳转地址显示`http://9.30.123.96:8080/test.html`。
 
 # proxy_set_header (Host & Upgrade & Connection)
-向代理服务器传递request header，请求字段的具体解释可以参考[https://zh.wikipedia.org/wiki/HTTP头字段][http-wiki]
+向代理服务器传递request header，请求字段的具体解释可以参考[简书HTTP头字段](https://www.jianshu.com/p/6e86903d74f7)
 
-- `proxy_set_header Upgrade $http_upgrade;`：[WebSocket proxying][websocket-nginx]
+- `proxy_set_header Upgrade $http_upgrade;`：[WebSocket proxying](http://nginx.org/en/docs/http/websocket.html)
 - `proxy_set_header Connection "upgrade";`：WebSocket proxying
 - `proxy_set_header Host $host;`：传递服务器的域名和端口号
 
@@ -89,5 +89,25 @@ location /name/ {
 }
 {% endhighlight %}
 
-[http-wiki]:https://zh.wikipedia.org/wiki/HTTP%E5%A4%B4%E5%AD%97%E6%AE%B5
-[websocket-nginx]:http://nginx.org/en/docs/http/websocket.html
+# buffering
+
+缓存主要是合理设置缓冲区大小，尽量避免缓冲到磁盘的情况：
+- proxy_buffering
+
+    默认开启，nginx会将后端响应内容先放到缓冲区，缓冲区大小由proxy_buffer_size和proxy_buffers指令决定。如果响应内容超出了缓冲区大小，则部分内容会被写到磁盘上的临时文件。临时文件由proxy_max_temp_file_size和proxy_temp_file_write_size这两个指令决定的。
+
+    如果关闭proxy_buffering，nginx会立即把收到的响应传送给客户端，每次从后端读取的大小为proxy_buffer_size，这样效率比较低。
+
+    当proxy_buffering设置为off，proxy_buffers和proxy_busy_buffers_size将会失效；但无论proxy_buffering是否开启，proxy_buffer_size都是生效的。
+
+- proxy_buffer_size
+
+    用来接受后端响应的第一部分，通常是响应头（Header）。默认大小是一个内存页，根据系统的不同可能是4K或者8K。
+
+- proxy_buffers
+
+    对于每个客户端连接，设置后端响应内容的缓冲区大小，总大小为number*size，size大小由系统内存页面大小决定；默认值是8*size。
+
+- proxy_busy_buffers_size
+
+    nginx会在没有完全读完后端响应的时候就开始向客户端传送数据，默认会划出2个内存页大小的缓冲区向客户端传送数据，然后继续从后端读取数据，缓冲区满了之后写到磁盘的临时文件。
