@@ -16,6 +16,7 @@ $$
 x_{n+1} := x_n - \frac{f(x_n)}{f^{'}(x_n)}
 $$
 
+
 # **牛顿法用于优化问题**
 
 机器学习中很多都是建立模型，然后求解最大似然估计，于是变成$$ l^{'}(\theta)  =0 $$的问题。当维度是1时，迭代公式变成：
@@ -38,7 +39,7 @@ H(f) = \left [
             \frac {\partial^2 f}{\partial x_1^2} & \frac {\partial^2 f}{\partial x_1 \partial x_2} & \cdots & \frac {\partial^2 f}{\partial x_1 \partial x_n} \\
             \frac {\partial^2 f}{\partial x_2 \partial x_1} & \frac {\partial^2 f}{\partial x_2^2} & \cdots & \frac {\partial^2 f}{\partial x_2 \partial x_n} \\
             \vdots & \vdots & \ddots & \vdots \\
-            \frac {\partial^2 f}{\partial x_n \partial x_1} & \frac {\partial^2 f}{\partial x_n \partial x_2} & \cdots & \frac {\partial^2 f}{\partial x_n^2} \\
+            \frac {\partial^2 f}{\partial x_n \partial x_1} & \frac {\partial^2 f}{\partial x_n \partial x_2} & \cdots & \frac {\partial^2 f}{\partial x_n^2}
         \end{matrix}
     \right ]
 $$
