@@ -1,0 +1,73 @@
+---
+title:  “Git使用”
+date:   2018-09-26 08:00:12 +0800
+categories: github
+---
+
+这篇博客针对有洁癖的Git使用者。Git是一个分布式的版本控制系统，通常的流程是开发者Fork项目，然后在新的分支上开发，最后提交PR给原项目。
+
+
+1. 本地克隆
+
+    ```
+    git clone https://github.com/colinback/xxx.git
+    ```
+
+2. 添加原项目仓库地址，并禁止上传
+
+    ```
+    git remote add upstream https://github.com/xxx/xxx.git
+    git remote set-url --push upstream no_push
+
+    # origin    https://github.com/colinback/xxx.git (fetch)
+    # origin    https://github.com/colinback/xxx.git (push)
+    # upstream  https://github.com/xxx/xxx.git (fetch)
+    # upstream  no_push (push)
+    git remote -v
+    ```
+
+3. 拉取原项目更新
+
+    ```
+    git fetch upstream
+    git checkout master
+    git rebase upstream/master
+    ```
+
+4. 切换分支开发
+
+    ```
+    git checkout -b myfeature
+    ```
+
+5. 提交/推送
+
+    ```
+    git commit -m 'xxx'
+    git push --set-upstream origin myfeature
+    ```
+
+如果提交的PR很快被接受了，一切看起来完美。但是提交的代码需要被审核，可能需要几轮的修改。这期间如果原项目master接受了其他人提交的PR，则可能造成冲突。比较粗暴的方法可以在myfeature分支上git merge master，解决冲突，然后commit。但是这样针对这个feature就有了2次commit。比较优雅的方法是:
+
+1. 拉取原项目更新
+
+    ```
+    git fetch upstream
+    git rebase upstream/master
+    ```
+
+2. 解决冲突
+
+3. 继续提交
+
+    ```
+    git add --all
+    git rebase --continue
+    git commit --amend --no-edit
+    ```
+
+4. 推送到自己的仓库(PR自动更新)
+
+    ```
+    git push -f origin myfeature
+    ```
