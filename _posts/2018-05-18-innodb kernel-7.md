@@ -82,7 +82,67 @@ supremum | 1 | 3
 - PAGE_CUR_L 小于
 - PAGE_CUR_LE 小于等于
 
-函数page_cur_search_with_match定位页中的记录，并通过变量page_cur_t* cursor返回。由于记录集合中存在重复记录，因此定位时需要判断查询模式。对于大于等于，定位的是第一条记录值为目标值的记录，因此需要循环直到low和up的距离差为1.
+函数page_cur_search_with_match通过查询tuple来定位页中的记录，并通过变量cursor（类型page_cur_t*）返回。查询记录与页中记录的比较通过函数cmp_dtuple_rec_with_match函数完成。
+
+由于记录集合中存在重复记录，因此定位时需要判断查询模式。对于大于等于，定位的是第一条记录值为目标值的记录，因此需要循环直到low和up的距离差为1。示意图如下：
+
+![image01]({{site.baseurl}}/image/20180518/page_cur_search.png)
+
+```cpp
+    // slot内部的二分法，如果low_rec和up_rec相差1则结束循环，否则继续
+    while (page_rec_get_next_const(low_rec) != up_rec) {
+        // 这里并没有除以2作为mid_rec而是简单的取下一行，因为rec是单链表这样显然很容易完成
+        mid_rec = page_rec_get_next_const(low_rec);
+
+        ut_pair_min(&cur_matched_fields, &cur_matched_bytes,
+                low_matched_fields, low_matched_bytes,
+                up_matched_fields, up_matched_bytes);
+        // 获得记录的各个字段的偏移数组
+        offsets = rec_get_offsets(mid_rec, index, offsets,
+                    dtuple_get_n_fields_cmp(tuple),
+                    &heap);
+        //进行比较，0为相等，1元组大于记录，-1记录大于元组，并且传出field和bytes
+        cmp = cmp_dtuple_rec_with_match(tuple, mid_rec, offsets,
+                        &cur_matched_fields,
+                        &cur_matched_bytes);
+        if (UNIV_LIKELY(cmp > 0)) { // 如果元组大于mid_rec记录
+low_rec_match:
+            low_rec = mid_rec;
+            low_matched_fields = cur_matched_fields;
+            low_matched_bytes = cur_matched_bytes;
+
+        } else if (UNIV_EXPECT(cmp, -1)) { // 如果元组小于mid_rec记录
+up_rec_match:
+            up_rec = mid_rec;
+            up_matched_fields = cur_matched_fields;
+            up_matched_bytes = cur_matched_bytes;
+        }
+            // 如果元组等于mid_rec 
+            else if (mode == PAGE_CUR_G || mode == PAGE_CUR_LE) { // 如果mode是PAGE_CUR_G或者PAGE_CUR_LE
+            goto low_rec_match;
+        } else { // 如果mode是PAGE_CUR_GE或者PAGE_CUR_L
+            goto up_rec_match;
+        }
+	}
+
+    // 此时low_rec和up_rec相差1
+    // 如果mode是PAGE_CUR_G和PAGE_CUR_GE,取up_rec
+    // 如果mode是PAGE_CUR_L和PAGE_CUR_LE,取low_rec
+    if (mode <= PAGE_CUR_GE) {
+		page_cur_position(up_rec, block, cursor);
+	} else {
+		page_cur_position(low_rec, block, cursor);
+	}
+
+	*iup_matched_fields  = up_matched_fields;
+	*iup_matched_bytes   = up_matched_bytes;
+	*ilow_matched_fields = low_matched_fields;
+	*ilow_matched_bytes  = low_matched_bytes;
+```
+
+变量iup_matched_fields，iup_matched_bytes，ilow_matched_fields和ilow_matched_bytes用来返回进行二叉查找算法记录比较时，左右各已经匹配的字段数量和字节数。
+
+上图查询>=3的记录，最后返回变量值iup_matched_fields=1， iup_matched_types=0， ilow_matched_fields=0， ilow_matched_bytes=3。在第二个步骤元组大于mid_rec记录，代码走到low_rec_match标签，ilow_matched_fields=0，ilow_matched_bytes=3；第三个步骤，元组等于mid_rec记录，且查询模式等于PAGE_CUR_GE，代码回到up_rec_match标签，iup_matched_fields=1，iup_matched_bytes=0。
 
 ## 插入记录
 
@@ -93,3 +153,6 @@ supremum | 1 | 3
 函数page_cur_delete_rec将物理记录“彻底”删除，即将记录占用空间放入PAGE_FREE队列队首，同时更新PAGE_LAST_INSERT，PAGE_DIRECTION，PAGE_N_DIRECTION。然后对page directory平衡进行维护。
 
 **对索引页的并发不是在page模块控制，而是由上层调用模块btr中负责控制**
+
+参考：  
+[简书：InnoDB中查询定位方法](https://www.jianshu.com/p/0cdd573a8232)

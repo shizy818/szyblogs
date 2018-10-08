@@ -57,7 +57,7 @@ mysql --socket=/tmp/mysql.sock -uroot
 # **Windows**
 
 - 安装[bison 2.4.1](http://gnuwin32.sourceforge.net/packages/bison.htm)
-- 安装[cmake 3.12.0](http://gnuwin32.sourceforge.net/packages/bison.htm)
+- 安装[cmake 3.12.0](https://cmake.org/download/)
 - 安装[Visual Studio Community 2015](https://download.microsoft.com/download/e/4/c/e4c393a9-8fff-441b-ad3a-3f4040317a1f/vs_community.exe)
 - 安装[boost_1_59_0-msvc-14.0-32.exe](https://sourceforge.net/projects/boost/files/boost-binaries/1.59.0/)
 
