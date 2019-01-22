@@ -1,0 +1,148 @@
+---
+title:  “Https证书”
+date:   2019-01-10 08:00:12 +0800
+categories: security
+---
+
+关于HTTPS连接，之前看过一个写得很不错的博客文章[https连接的前几毫米发生了什么](http://www.cnblogs.com/yincheng/p/https.html)。下面再总结一下自己在证书上遇到的一些问题。
+
+
+# OpenSSL生成自签名证书 
+
+- CA证书
+
+```shell
+# private key
+openssl genrsa -out ca-key.pem 1024
+# generate csr
+openssl req -new -out ca-req.csr -key ca-key.pem
+# generate certificate
+openssl x509 -req -in ca-req.csr -out ca-cert.pem -signkey ca-key.pem -days 365
+```
+
+- 服务器证书
+
+```shell
+# private key
+openssl genrsa -out server-key.pem 1024
+# generate csr
+openssl req -new -out server-req.csr -key server-key.pem
+# generate certificate
+openssl x509 -req -in server-req.csr -out server-cert.pem -signkey server-key.pem -CA ca-cert.pem -CAkey ca-key.pem -CAcreateserial -days 365
+```
+
+- 客户端证书
+
+```shell
+# private key
+openssl genrsa -out client-key.pem 1024
+# generate csr
+openssl req -new -out client-req.csr -key client-key.pem
+# generate certificate
+openssl x509 -req -in client-req.csr -out client-cert.pem -signkey client-key.pem -CA ca-cert.pem -CAkey ca-key.pem -CAcreateserial -days 365
+```
+
+- PEM转P12
+
+```shell
+openssl pkcs12 -export -out client-key.p12 -inkey client-key.pem -in client-cert.pem
+```
+
+此外github上有不少项目可以一键生成，比如[tls-gen](tls-genhttps://github.com/michaelklishin/tls-gen)。
+
+
+# 证书验证
+
+一个证书包含签名，签名算法，颁发者信息，持有者信息，持有者公钥，扩展等等。证书中扩展SAN(Subject Alternative Name)是SSL标准x509定义的一个扩展，使得一个证书支持多个不同域名解析。
+大部分CA都有证书链，浏览器对于收到的多级证书，需要从站点证书开始逐级验证，直至出现操作系统或浏览器内置的受信任CA根证书。浏览器还需要校验当前访问的域名是否存在于证书BSCertificate的
+CN或SAN字段之中。之前我一直以为只有当证书不是由受信任的数字证书管理机构签发，浏览器才可以添加例外。结果发现浏览器添加例外可以有多种情况，比如：
+
+* SSL_ERROR_BAD_CERT_DOMAIN （证书域名和服务器不匹配）
+* SSL_ERROR_UNKNOWN_ISSUER （证书签发者未知）
+* ERR_CERT_AUTHORITY_INVALID （证书未签名）
+
+如果通过程序连接，则情况各异。Python SSL默认模式为ssl.CERT_NONE；而Nodejs的tls.connect参数rejectUnauthorized默认True，表示需要验证证书。
+
+Python连接Rabbitmq Https：
+```python
+#!/usr/bin/env python
+import pika
+import ssl
+
+cp = pika.ConnectionParameters(
+    ssl=True,
+    port=5671,
+    host="9.30.123.195",
+    ssl_options=dict(
+        ssl_version=ssl.PROTOCOL_TLSv1,
+        ca_certs="./ca_certificate.pem",
+        keyfile="./client_key.pem",
+        certfile="./client_certificate.pem",
+        cert_reqs=ssl.CERT_REQUIRED)
+    )
+conn = pika.BlockingConnection(cp)
+```
+
+Java连接Rabbitmq Https：
+```java
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
+
+import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.Connection;
+import com.rabbitmq.client.ConnectionFactory;
+
+// 如果双向验证需要提供客户端证书，rabbitmq中设置参数verify=verify_peer，fail_if_no_peer_cert=false
+char[] keyPassphrase = "passw0rd".toCharArray();
+KeyStore ks = KeyStore.getInstance("PKCS12");
+ks.load(new FileInputStream("/Users/shizy/tmp/rabbitmq/client.keycert.p12"), keyPassphrase);
+
+KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
+kmf.init(ks, keyPassphrase);
+
+char[] trustPassphrase = "passw0rd".toCharArray();
+KeyStore tks = KeyStore.getInstance("JKS");
+tks.load(new FileInputStream("/Users/shizy/tmp/rabbitmq/rabbitstore"), trustPassphrase);
+
+TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509");
+tmf.init(tks);
+
+SSLContext sslCtx = SSLContext.getInstance("TLSv1.2");
+sslCtx.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
+
+// 创建连接工厂
+ConnectionFactory factory = new ConnectionFactory();
+// 设置RabbitMQ地址端口
+factory.setHost("9.30.123.195");
+factory.setPort(5671);
+
+factory.useSslProtocol(sslCtx);
+// 创建一个新的连接
+Connection connection = factory.newConnection();
+```
+
+# 加密算法
+
+服务器会在浏览器支持的加密组合中选择一种方式，例如TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA。
+
+- 密钥交换算法，用于客户端和服务器端握手过程中的认证，包括Diffie-Hellman, RSA, ECDH等
+- 加密算法，用于加密消息流，包括AES，DES等
+- 报文认证信息算法，用于创建摘要，确保消息没有被篡改，包括MD5，SHA等
+
+由于一般证书的密钥和公钥（2048位）都比较大，使用ECDH算法最大的优势在于，在安全性强度相同的情况下，其所需的密钥长度较短。关于ECDH的简介，
+可以参考这篇文章[CSDN: SSL中的RSA、DHE、ECDHE、ECDH流程与区别](https://blog.csdn.net/mrpre/article/details/78025940)。
+
+在RSA密钥交换中，浏览器使用证书提供的RSA公钥加密相关信息，如果服务端能解密，意味着服务端拥有证书对应的私钥，同时也能算出对称加密所需密钥；
+密钥交换和服务端认证合并在一起。在ECDHE密钥交换中，服务端使用证书私钥对相关信息进行签名，如果浏览器能用证书公钥验证签名，就说明服务端确实
+拥有对应私钥，从而完成了服务端认证；密钥交换和服务端认证是完全分开的。密钥交换+签名有三种主流选择
+
+* RSA密钥交换（无需签名）
+* ECDHE密钥交换，RSA签名
+* ECDHE密钥交换，ECDSA签名
+
+内置ECDSA公钥的证书一般被称之为ECC证书，内置RSA公钥的证书就是RSA证书。RSA证书可以用于RSA密钥交换（RSA非对称加密）或ECDHE密钥交换（RSA非对称签名）；
+而ECC证书只能用于ECDHE密钥交换（ECDSA非对称签名）。并不是所有浏览器都支持ECDHE密钥交换，所以ECC证书的兼容性要差一些。
+
+参考：  
+[开始使用ECC证书](http://ju.outofmemory.cn/entry/277347)
