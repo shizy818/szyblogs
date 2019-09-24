@@ -96,7 +96,7 @@ $$
     $$ Y $$对$$ X $$求导：
 
     $$
-    \frac{\partial Y}{\partial X} = Jacobian_X(Y) = W
+    \frac{\partial Y}{\partial X} = J_X(Y) = W
     $$
 
     $$ Y $$对$$ W $$求导是一个三阶张量：
@@ -176,8 +176,8 @@ $$
 
     $$
     \begin{aligned}
-    \delta X_k^i &= \sum_v \delta_{k,v} \centerdot \mathcal{I}\{X_v^i > 0\} \centerdot X_v^{i+1} \\
-    &= \mathcal{I}\{X_k^i > 0\} \centerdot X_k^{i+1}
+    \delta X_k^i &= \sum_v \delta_{k,v} \centerdot \mathcal{I}\{X_v^i > 0\} \centerdot \delta X_v^{i+1} \\
+    &= \mathcal{I}\{X_k^i > 0\} \centerdot \delta X_k^{i+1}
     \end{aligned}
     $$
 
