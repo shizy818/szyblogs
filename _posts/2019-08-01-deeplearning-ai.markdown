@@ -78,18 +78,17 @@ a^{[l]} &= g^{[l]}(z^{[l]})
 \end{aligned}
 $$
 
-反向传播步骤，输入为$$\frac{dL}{da^{[l]}}$$：
+反向传播步骤，输入为$$da^{[l]}$$，其代表的含义是$$\frac{\partial L}{\partial a^{[l]}}$$。对于逻辑回归的例子，$$da^{[l]}$$等于$$-\frac{y}{a^{[l]}}+\frac{(1-y)}{(1-a^{[l]})}$$；如果采用平方损失函数$$L = \frac {1}{2} (a^{[l]} - y)^2$$，$$da^{[l]}$$等于$$da^{[l]}-y$$。迭代部分的公式为：
 
 $$
 \begin{aligned}
-\frac{\partial L}{\partial z^{[l]}} &= \frac{\partial L}{\partial a^{[l]}} \cdot {g^{[l]}}'(z^{[l]}) \\
-\frac{\partial L}{\partial w^{[l]}} &= \frac{\partial L}{\partial z^{[l]}} \cdot a^{[l-1]} \\
-\frac{\partial L}{\partial b^{[l]}} &= \frac{\partial L}{\partial z^{[l]}} \\
-\frac{\partial L}{\partial a^{[l-1]}} &= {w^{[l]}}^T \cdot \frac{\partial L}{\partial z^{[l]}}
+dz^{[l]} &= da^{[l]} \cdot {g^{[l]}}'(z^{[l]}) \\
+dw^{[l]} &= dz^{[l]} \cdot a^{[l-1]} \\
+db^{[l]} &= dz^{[l]} \\
+da^{[l-1]} &= {w^{[l]}}^T \cdot dz^{[l]}
 \end{aligned}
 $$
 
 参考：  
 [Coursera深度学习教程中文笔记](https://github.com/fengdu78/deeplearning_ai_books)  
-[Coursera深度学习课件](https://github.com/stormstone/deeplearning.ai)  
-[deeplearning.ai作业](https://github.com/colinback/deeplearning.ai)
+[Coursera深度学习课件](https://github.com/stormstone/deeplearning.ai)
