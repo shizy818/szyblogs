@@ -1,0 +1,152 @@
+---
+title:  “Recurrent Neural Networks”
+date:   2019-09-01 08:00:12 +0800
+categories: deeplearning.ai
+---
+
+序列模型(Sequence Models)是deeplearning.ai的第五门课程。循环神经网络(RNN)之类的模型在语音识别，自然语言处理(NLP)和其他一些领域都引起了变革。
+
+
+# 循环神经网络模型
+
+在每一个时间步中，循环神经网络传递一个激活值到下一个时间步中用于计算。零时刻需要构造一个激活值$$a^{\langle 0 \rangle}$$，通常是一个零向量。循环神经网络从左往右扫描数据，每个时间步的参数$$W_{aa}$$，$$W_{ax}$$和$$W_{ya}$$是共享的。
+
+![image01]({{site.baseurl}}/image/20190901/rnn.png)
+
+这样的神经网络结构限制了某一时刻的预测仅仅使用了序列之前的输入信息和当前输入信息。前向传播公式为：
+
+![image02]({{site.baseurl}}/image/20190901/rnn_step_forward.png)
+
+循环神经网络中计算$$a^{\langle t \rangle}$$的激活函数通常是tanh或者ReLU；输出$$\hat y^{\langle t \rangle}$$的激活函数取决于输出类型，二分问题通常是sigmoid，k分类问题则通常是softmax。
+
+作为简化，可以定义$$W_a = [W_{aa}\ \vdots \ W_{ax}]$$，则$$W_{aa}a^{\langle t-1 \rangle} + W_{ax}x^{\langle t \rangle} = [W_{aa}\ \vdots \ W_{ax}] \left [ \begin{matrix} a^{\langle t-1 \rangle} \\ x^{\langle t \rangle} \end{matrix} \right ]$$。这样可以将两个参数矩阵$$W_{aa}$$和$$W_{ax}$$压缩成一个参数矩阵$$W_a$$。同样预测$$\hat y^{\langle t \rangle}$$的公式中，也可以用$$W_y$$符合来代替$$W_{ya}$$。
+
+为了计算反向传播，需要一个损失函数。定义某个时刻的损失函数为交叉熵损失函数：
+
+$$
+L^{\langle t \rangle} (\hat y^{\langle t \rangle}, y^{\langle t \rangle}) = - \sum_i y_i^{\langle t \rangle} log \hat y_i^{\langle t \rangle}
+$$
+
+整个时间序列的损失函数定义为：
+
+$$
+J = \sum_{t=1}^{T_x} L^{\langle t \rangle} (\hat y^{\langle t \rangle}, y^{\langle t \rangle})
+$$
+
+前向传播时，从左到右依次计算每一个时间步的损失函数$$\hat y^{\langle 1 \rangle}, \hat y^{\langle 2 \rangle}, \cdots, \hat y^{\langle T_x \rangle}$$，然后把它们加起来。反向传播时，从右向左通过梯度下降法来更新参数。
+
+反向传播公式为：
+
+![image03]({{site.baseurl}}/image/20190901/rnn_cell_backprop.png)
+
+$$
+\begin{aligned}
+\frac {\partial J}{\partial W_{aa}} &= \frac {\partial J}{\partial a^{\langle t \rangle}} \frac {\partial a^{\langle t \rangle}}{\partial W_{aa}} \\
+\frac {\partial J}{\partial W_{ax}} &= \frac {\partial J}{\partial a^{\langle t \rangle}} \frac {\partial a^{\langle t \rangle}}{\partial W_{ax}} \\
+\frac {\partial J}{\partial b} &= \frac {\partial J}{\partial a^{\langle t \rangle}} \frac {\partial a^{\langle t \rangle}}{\partial b} 
+\end{aligned}
+$$
+
+**$$\frac {\partial J}{\partial a^{\langle t-1 \rangle}}$$的计算，感觉需要一个修正。**设$$z^{\langle t \rangle} = W_{ya} a^{\langle t \rangle} + b_y$$:
+
+$$
+\begin{aligned}
+\frac {\partial J}{\partial a^{\langle t-1 \rangle}} &= \frac {\partial J}{\partial z^{\langle t-1 \rangle}} \frac {\partial z^{\langle t-1 \rangle}}{\partial a^{\langle t-1 \rangle}} + \frac {\partial J}{\partial a^{\langle t \rangle}} \frac {\partial a^{\langle t \rangle}}{\partial a^{\langle t-1 \rangle}} \\
+&= (\hat y^{\langle t-1 \rangle} - y^{\langle t-1 \rangle}) W_{ya} + \frac {\partial J}{\partial a^{\langle t \rangle}} \frac {\partial a^{\langle t \rangle}}{\partial a^{\langle t-1 \rangle}}
+\end{aligned}
+$$
+
+其中对softmax交叉熵函数求导：
+
+$$
+\begin{aligned}
+\frac {\partial J}{\partial z_i} &= (- \sum_j y_j \frac {1}{\hat y_j}) \frac {\partial \hat y_j}{\partial z_i} \\
+&= - \frac {y_i}{\hat y_i} \hat y_i (1 - \hat y_i) + \sum_{j \neq i} \frac {y_j}{\hat y_j} \hat y_i \hat y_j \\
+&= - y_i (1 - \hat y_i) + \sum_{j \neq i} y_j \hat y_i \\
+&= \hat y_i - y_i
+\end{aligned}
+$$
+
+# LSTM
+
+RNN不擅长处理长期依赖的问题，GRU（门控循环单元网路）可以有效的解决梯度消失问题，并且能使神经网络捕获更长的长期依赖。另外一个比较经典是LSTM(长短时记忆网络)，是一个比GRU更加强大和通用的版本。LSTM除了隐藏状态$$a^{\langle t \rangle}$$(hidden state)，还引入了一个记忆状态$$c^{\langle t \rangle}$$(cell state)。遗忘门$$f$$(Forget Gate)，更新门$$u$$(Update Gate)和输出门$$o$$(Output Gate)分别代表记忆状态遗忘程度，当前时刻输入的保留程度以及记忆状态到隐藏状态的转移程度。
+
+![image04]({{site.baseurl}}/image/20190901/lstm_rnn.png)
+
+前向传播公式为：
+
+![image05]({{site.baseurl}}/image/20190901/lstm.png)
+
+反向传播公式，我参考的是[LSTM Forward and Backword Pass](http://arunmallya.github.io/writeups/nn/lstm/index.html)和[LSTM公式推导](https://bbs.csdn.net/topics/392562046)。Andrew Ng给的公式中，多了一项$$\frac {\partial J}{\partial c^{\langle t \rangle}}$$，可以参考文章[LSTM反向传播的推导](https://www.chenlongyu.com/article/id/52)和[RNN/LSTM反向推导详解](https://blog.csdn.net/qq_29762941/article/details/89294252)，但是我没有特别明白$$c_1$$的部分如何用数学解释。门偏导：
+
+$$
+\begin{aligned}
+\frac {\partial J}{\partial \Gamma_o^{\langle t \rangle}} &= \frac {\partial J}{\partial a^{\langle t \rangle}} \cdot \frac {\partial a^{\langle t \rangle}}{\partial \Gamma_o^{\langle t \rangle}} \\
+&= \frac {\partial J}{\partial a^{\langle t \rangle}} tanh(c^{\langle t \rangle}) \\
+
+\frac {\partial J}{\partial c^{\langle t \rangle}} &= \frac {\partial J}{\partial a^{\langle t \rangle}} \cdot \frac {\partial a^{\langle t \rangle}}{\partial c^{\langle t \rangle}} \\
+&= \frac {\partial J}{\partial a^{\langle t \rangle}} \Gamma_o^{\langle t \rangle} (1 - tanh(c^{\langle t \rangle})^2) \\
+
+\frac {\partial J}{\partial \tilde c^{\langle t \rangle}} &= \frac {\partial J}{\partial c^{\langle t \rangle}} \cdot \frac {\partial c^{\langle t \rangle}}{\partial \tilde c^{\langle t \rangle}} \\
+&= \frac {\partial J}{\partial a^{\langle t \rangle}} \Gamma_o^{\langle t \rangle} (1 - tanh(c^{\langle t \rangle})^2) \Gamma_u^{\langle t \rangle} \\
+
+\frac {\partial J}{\partial \Gamma_u^{\langle t \rangle}} &= \frac {\partial J}{\partial c^{\langle t \rangle}} \cdot \frac {\partial c^{\langle t \rangle}}{\partial \Gamma_u^{\langle t \rangle}} \\
+&= \frac {\partial J}{\partial a^{\langle t \rangle}} \Gamma_o^{\langle t \rangle} (1 - tanh(c^{\langle t \rangle})^2) \tilde c^{\langle t \rangle} \\
+
+\frac {\partial J}{\partial \Gamma_f^{\langle t \rangle}} &= \frac {\partial J}{\partial c^{\langle t \rangle}} \cdot \frac {\partial c^{\langle t \rangle}}{\partial \Gamma_f^{\langle t \rangle}} \\
+&= \frac {\partial J}{\partial a^{\langle t \rangle}} \Gamma_o^{\langle t \rangle} (1 - tanh(c^{\langle t \rangle})^2) c^{\langle t-1 \rangle} 
+\end{aligned}
+$$
+
+参数偏导：
+
+$$
+\begin{aligned}
+\frac {\partial J}{\partial W_f} &= \frac {\partial J}{\partial \Gamma_f^{\langle t \rangle}} \cdot \frac {\partial \Gamma_f^{\langle t \rangle}}{\partial W_f} \\
+&= \frac {\partial J}{\partial \Gamma_f^{\langle t \rangle}} \Gamma_f^{\langle t \rangle} (1 - \Gamma_f^{\langle t \rangle}) \left [ \begin{matrix} a^{\langle t-1 \rangle} \\ x^{\langle t \rangle} \end{matrix} \right ] ^T \\
+
+\frac {\partial J}{\partial W_u} &= \frac {\partial J}{\partial \Gamma_u^{\langle t \rangle}} \cdot \frac {\partial \Gamma_u^{\langle t \rangle}}{\partial W_u} \\
+&= \frac {\partial J}{\partial \Gamma_u^{\langle t \rangle}} \Gamma_u^{\langle t \rangle} (1 - \Gamma_u^{\langle t \rangle}) \left [ \begin{matrix} a^{\langle t-1 \rangle} \\ x^{\langle t \rangle} \end{matrix} \right ] ^T \\
+
+\frac {\partial J}{\partial W_o} &= \frac {\partial J}{\partial \Gamma_o^{\langle t \rangle}} \cdot \frac {\partial \Gamma_o^{\langle t \rangle}}{\partial W_o} \\
+&= \frac {\partial J}{\partial \Gamma_o^{\langle t \rangle}} \Gamma_o^{\langle t \rangle} (1 - \Gamma_o^{\langle t \rangle}) \left [ \begin{matrix} a^{\langle t-1 \rangle} \\ x^{\langle t \rangle} \end{matrix} \right ] ^T \\
+
+\frac {\partial J}{\partial W_c} &= \frac {\partial J}{\partial \tilde c^{\langle t \rangle}} \cdot \frac {\partial \tilde c^{\langle t \rangle}}{\partial W_c} \\
+&= \frac {\partial J}{\partial \tilde c^{\langle t \rangle}} (1 - tanh(\tilde c^{\langle t \rangle})^2) \left [ \begin{matrix} a^{\langle t-1 \rangle} \\ x^{\langle t \rangle} \end{matrix} \right ] ^T
+\end{aligned}
+$$
+
+最后计算隐藏状态，记忆状态和输入的偏导：
+
+$$
+\begin{aligned}
+\frac {\partial J}{\partial a^{\langle t-1 \rangle}} &= \frac {\partial J}{\partial \Gamma_f^{\langle t \rangle}} \frac {\partial \Gamma_f^{\langle t \rangle}}{\partial a^{\langle t-1 \rangle}} + \frac {\partial J}{\partial \Gamma_u^{\langle t \rangle}} \frac {\partial \Gamma_u^{\langle t \rangle}}{\partial a^{\langle t-1 \rangle}} + \frac {\partial J}{\partial \Gamma_o^{\langle t \rangle}} \frac {\partial \Gamma_o^{\langle t \rangle}}{\partial a^{\langle t-1 \rangle}} + \frac {\partial J}{\partial \tilde c^{\langle t \rangle}} \frac {\partial \tilde c^{\langle t \rangle}}{\partial a^{\langle t-1 \rangle}} \\
+&= W_f^T \frac {\partial J}{\partial \Gamma_f^{\langle t \rangle}} \Gamma_f^{\langle t \rangle} (1 - \Gamma_f^{\langle t \rangle}) + W_u^T \frac {\partial J}{\partial \Gamma_u^{\langle t \rangle}} \Gamma_u^{\langle t \rangle} (1 - \Gamma_u^{\langle t \rangle}) \\
+&\quad + W_o^T \frac {\partial J}{\partial \Gamma_o^{\langle t \rangle}} \Gamma_o^{\langle t \rangle} (1 - \Gamma_o^{\langle t \rangle}) + W_c^T \frac {\partial J}{\partial \tilde c^{\langle t \rangle}} (1 - tanh(\tilde c^{\langle t \rangle})^2) \\
+&\quad (W_f^T, W_u^T, W_o^T, W_c^T对应原矩阵a^{\langle t-1 \rangle}部分) \\
+
+\frac {\partial J}{\partial x^{\langle t \rangle}} &= \frac {\partial J}{\partial \Gamma_f^{\langle t \rangle}} \frac {\partial \Gamma_f^{\langle t \rangle}}{\partial x^{\langle t \rangle}} + \frac {\partial J}{\partial \Gamma_u^{\langle t \rangle}} \frac {\partial \Gamma_u^{\langle t \rangle}}{\partial x^{\langle t \rangle}} + \frac {\partial J}{\partial \Gamma_o^{\langle t \rangle}} \frac {\partial \Gamma_o^{\langle t \rangle}}{\partial x^{\langle t \rangle}} + \frac {\partial J}{\partial \tilde c^{\langle t \rangle}} \frac {\partial \tilde c^{\langle t \rangle}}{\partial x^{\langle t \rangle}} \\
+&= W_f^T \frac {\partial J}{\partial \Gamma_f^{\langle t \rangle}} \Gamma_f^{\langle t \rangle} (1 - \Gamma_f^{\langle t \rangle}) + W_u^T \frac {\partial J}{\partial \Gamma_u^{\langle t \rangle}} \Gamma_u^{\langle t \rangle} (1 - \Gamma_u^{\langle t \rangle}) \\
+&\quad + W_o^T \frac {\partial J}{\partial \Gamma_o^{\langle t \rangle}} \Gamma_o^{\langle t \rangle} (1 - \Gamma_o^{\langle t \rangle}) + W_c^T \frac {\partial J}{\partial \tilde c^{\langle t \rangle}} (1 - tanh(\tilde c^{\langle t \rangle})^2) \\
+&\quad (W_f^T, W_u^T, W_o^T, W_c^T对应原矩阵x^{\langle t \rangle}部分) \\
+
+\frac {\partial J}{\partial c^{\langle t-1 \rangle}} &= \frac {\partial J}{\partial c^{\langle t \rangle}} \cdot \frac {\partial c^{\langle t \rangle}}{\partial c^{\langle t-1 \rangle}} \\
+&= \frac {\partial J}{\partial c^{\langle t \rangle}} \Gamma_f^{\langle t \rangle} = \frac {\partial J}{\partial a^{\langle t \rangle}} \Gamma_o^{\langle t \rangle} (1 - tanh(c^{\langle t \rangle})^2) \Gamma_f^{\langle t \rangle}
+\end{aligned}
+$$
+
+# 双向循环神经网络
+
+前面提到的模型在预测时，仅依靠之前获取的信息；而某些场景预测也依赖于之后的时刻获取的信息。双向RNN可以解决这个问题，给定输入序列$$x^{\langle 1 \rangle}$$到$$x^{\langle 4 \rangle}$$，首先从左到右依次计算正向激活值$$\vec a^{\langle 1 \rangle}$$到$$\vec a^{\langle 4 \rangle}$$，然后反向计算激活值$$\dot a^{\langle 4 \rangle}$$到$$\dot a^{\langle 1 \rangle}$$；最后利用这些激活值预测结果。
+
+![image06]({{site.baseurl}}/image/20190901/birnn.png)
+
+# 深层神经网络
+
+如果需要学习非常复杂的函数，可以把RNN的多个层堆叠在一起构建更深的模型。下图表示了一个两层LSTM模型：
+
+![image07]({{site.baseurl}}/image/20190901/multi_layer_lstm.png)
+
+参考：  
+[Softmax交叉熵损失函数求导](https://www.jianshu.com/p/c02a1fbffad6)  
+[RNN模型与前向反向传播算法](https://www.cnblogs.com/pinard/p/6509630.html) 
