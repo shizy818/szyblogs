@@ -1,6 +1,6 @@
 ---
 title:  “廖雪峰python笔记”
-date:   2019-09-05 08:00:12 +0800
+date:   2019-10-10 08:00:12 +0800
 categories: deeplearning.ai
 ---
 

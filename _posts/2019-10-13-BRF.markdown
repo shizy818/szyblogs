@@ -1,0 +1,87 @@
+---
+title:  “径向基神经网络”
+date:   2019-10-13 08:00:12 +0800
+categories: deeplearning
+---
+
+对深度学习的了解基本一直停留在BP神经网络和CNN/RNN。最近相对比较空闲，在网上找找到一篇[Deep Learning随笔](https://www.cnblogs.com/pythonlearing/category/1339852.html)。打算顺着这个思路看一看RBF, RBM和DBN等等。
+
+
+BP神经网络属于全局逼近网络，对于每次训练输入，每个权值都要调整，从而导致学习速度很慢。径向基神经网络是由三层(输入层，隐藏层，输出层)构成的前向网络，其中隐藏层采用径向基函数作为响应函数，将原本的输入空间映射到高维空间，从而使得线性不可分问题变得线性可分。
+
+# 径向基函数
+
+径向基函数(Radial Basis Function)是一个依赖于到中心点$$c$$距离的实值函数，的定义是：
+
+$$
+\Phi(x,c) = h(\Vert x -c \Vert)
+$$
+
+标准一般使用欧氏距离，最常用的径向基函数是高斯核函数，即$$h(\Vert x -c \Vert) = e^{- \frac {\Vert x -c \Vert^2}{2 \sigma^2}}$$。如果$$x$$离$$c$$很近，核函数值为1；反之则核函数约等于0。核函数也可以是线性核，多项式核或者Sigmoid核。
+
+
+# RBF神经网络
+
+广义RBF网络结构如下图：
+
+![image01]({{site.baseurl}}/image/20191013/rbf.png)
+
+输入层有M个输入节点，隐藏层有N个隐藏节点，则第$$k$$个输入向量产生的输出表达式为：
+
+$$
+\begin{aligned}
+y_{kj} &= w_{0j} + \sum_{i=1}^N w_{ij} e^{- \frac {\Vert x_k -c_i \Vert^2}{2 \sigma^2}} \quad j = 1, 2, \cdots, J
+\end{aligned}
+$$
+
+$$c_i$$是隐藏层N个节点的基函数中心（蓝色点），RBF使样本点只被附近的输入激活。
+
+![image02]({{site.baseurl}}/image/20191013/samples.jpg)
+
+中心的选定方法可以有：
+
+- 随机选取固定中心
+- 通过无监督聚类算法(如K-Means)选取N个中心
+- 有监督学习，通过梯度下降修正$$c_i$$和其他参数$$w_{ij}, \sigma$$
+
+    推导梯度下降公式时，用简化的RBF网络，输出只有一个节点：
+
+    ![image01]({{site.baseurl}}/image/20191013/rbf.jpg)
+
+    M为训练样本数，N为隐藏节点数，$$e_j$$为信号误差；代价函数为：
+
+    $$
+    \begin{aligned}
+    J &= \frac {1}{2} \sum_{j=1}^M e_j^2 \\
+    &= \frac {1}{2} \sum_{j=1}^M (d_j - \sum_{i=1}^N w_i h(\Vert x_j - c_i \Vert))^2 \\
+    &= \frac {1}{2} \sum_{j=1}^M (d_j - \sum_{i=1}^N w_i \cdot exp^{- \frac {(x_j -c_i)^2}{2 \sigma^2}})^2 \\
+    \end{aligned}
+    $$
+
+    参数更新：
+
+    $$
+    \begin{aligned}
+    \frac {\partial J}{\partial w_i} &= -\sum_{j=1}^M e_j \cdot h(\Vert x_j - c_i \Vert) \\
+    w_i &:= w_i - \lambda_1 \cdot \frac {\partial J}{\partial w_i} \\
+
+    \frac {\partial J}{\partial c_i} &= -w_i \sum_{j=1}^M e_j \cdot exp^{- \frac {(x_j -c_i)^2}{2 \sigma^2}} \cdot \frac {x_j -c_i}{\sigma^2} \\
+    c_i &:= c_i - \lambda_2 \cdot \frac {\partial J}{\partial c_i} \\
+
+    \frac {\partial J}{\partial \sigma} &= -w_i \sum_{j=1}^M e_j \cdot exp^{- \frac {(x_j -c_i)^2}{2 \sigma^2}} \cdot \frac {(x_j -c_i)^2}{\sigma^3} \\
+    \sigma &:= \sigma - \lambda_3 \cdot \frac {\partial J}{\partial \sigma} \\
+
+    \end{aligned}
+    $$
+
+- 正交最小二乘法
+
+# RBF神经网络 vs BP神经网络
+
+1. BP神经网络隐藏节点将输入和权重的内积作为激活函数Sigmoid函数的自变量，参数对BP网络的输出具有同等地位影响，因此是对非线性网络的**全局优化**，学习速度较慢。
+
+2. RBF神经网络隐藏节点将输入与中心向量的距离作为径向基函数的自变量，神经元的输入离径向基函数中心越远，神经元的激活程度就越低，因此RBF网络具有**局部优化**的特点。对于一个输入$$x$$，只有部分神经元会有响应，其他的都近似为0，对应的参数$$w$$就不需要调整了，所以学习速度快。
+
+参考：  
+[知乎: RBF神经网络和BP神经网络的区别](https://www.zhihu.com/question/44328472)  
+[RBF神经网络](https://www.cnblogs.com/pinking/p/9349695.html)

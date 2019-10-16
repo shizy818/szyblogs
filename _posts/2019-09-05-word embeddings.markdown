@@ -63,3 +63,5 @@ $$
 3. 均衡(Equalize)，对于某些词比如actor和actress，它们到中轴线的距离不等，因此需要调整保证相等的距离。
 
     ![image05]({{site.baseurl}}/image/20190905/equalize.png)
+
+IBM开源了一个机器学习除偏的项目[AIF360](https://github.com/IBM/AIF360)。
