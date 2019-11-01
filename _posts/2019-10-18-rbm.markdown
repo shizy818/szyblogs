@@ -1,0 +1,134 @@
+---
+title:  “受限玻尔兹曼机”
+date:   2019-10-17 08:00:12 +0800
+categories: deeplearning
+---
+
+玻尔兹曼机的一个问题是学习算法效率太差。直到2000年之后Geoffrey E. Hintony又提出了受限玻尔兹曼机，学习算法的效率大大提升。如同名字所示，受限玻尔兹曼机就是波兹曼机的结构受到限制，隐藏层和可见层的层内没有连接。
+
+
+受限玻尔兹曼机的结构如下，一般是二值的，即不管是隐藏层还是可见层，它们的神经元的取值只为0或者1。
+
+![image01]({{site.baseurl}}/image/20191018/rbm.png)
+
+# 受限玻尔兹曼机的能量函数和概率分布
+
+1. 把RBM看成一个能量模型，可见单元和隐藏单元总能量:
+
+    $$
+    E(v,h) = - \sum \limits_{i \in visible} a_i v_i - \sum \limits_{j \in hidden} b_j h_j - \sum \limits_i \sum \limits_j v_i w_{ij} h_j
+    $$
+
+    或者矩阵形式:
+
+    $$
+    E(v,h) = - a^Tv - b^Th - v^TWh
+    $$
+
+2. 要使得模型的能量减少到一个稳定状态，需要更新神经元状态，首先计算某个神经元开启和关闭时的能量差:
+
+    $$
+    \begin{aligned}
+    \Delta E_i &= E(v_i = 0) - E(v_i = 1) = a_i + \sum \limits_{j \in hidden} w_{ij} h_j \\
+    \Delta E_j &= E(h_j = 0) - E(h_j = 1) = b_j + \sum \limits_{i \in visible} w_{ij} v_i
+    \end{aligned}
+    $$
+
+3. 某个神经元开启或者关闭的概率:
+
+    $$
+    \begin{aligned}
+    p(v_i|h) &= \sigma(\Delta E_i) = \frac {1}{1 + e^{- \Delta E_i}} \\
+    p(h_j|v) &= \sigma(\Delta E_j) = \frac {1}{1 + e^{- \Delta E_j}}
+    \end{aligned}
+    $$
+
+4. RBM最终达到一个平稳分布，分布函数为:
+
+    $$
+    p(\nu,h) = \frac {e^{-E(\nu,h)}}{\sum \limits_{v,h} e^{-E(v,h)}}
+    $$
+
+5. 因为RBM同层内没有连接，可见单元和隐藏单元的条件概率分布为:
+
+    $$
+    \begin{aligned}
+    p(v|h) &= \prod_{i=1}^m p(v_i|h) \\
+    p(h|v) &= \prod_{i=1}^n p(h_j|v)
+    \end{aligned}
+    $$
+
+# 受限玻尔兹曼机训练过程
+
+采用单个样本$$\nu$$的对数最大似然函数作为损失函数:
+
+$$
+\begin{aligned}
+lnL &= lnp(\nu) = ln(\frac{1}{Z} \sum \limits_h e^{-E(\nu,h)}) \\
+&= ln \sum \limits_h e^{-E(\nu,h)} - lnZ \\
+& = ln \sum \limits_h e^{-E(\nu,h)} - ln \sum \limits_{v,h} e^{-E(v,h)}
+\end{aligned}
+$$
+
+省略中间的推导步骤，偏导公式如下，其中data和model分别简记$$p(h \vert \nu)$$和$$p(v,h)$$两个概率分布:
+
+$$
+\begin{aligned}
+\frac {\partial ln p(\nu)}{\partial w_{ij}} &= p(h_j=1|\nu)\nu_i - \sum \limits_v p(v)p(h_j=1|v)v_i \\
+&= \langle \nu_i h_j \rangle_{p(h|\nu)} - \langle v_i h_j \rangle_{p(v,h)} \\
+&= \langle \nu_i h_j \rangle_{data} - \langle v_i h_j \rangle_{model} \\
+\frac {\partial ln p(\nu)}{\partial a_i} &= \nu_i - \sum \limits_v p(v)v_i \\
+&= \langle \nu_i \rangle_{data} - \langle v_i \rangle_{model} \\
+\frac {\partial ln p(\nu)}{\partial b_i} &= p(h_j=1|\nu) - \sum \limits_v p(v)p(h_j=1|v) \\
+&= \langle h_j \rangle_{data} - \langle h_j \rangle_{model}
+\end{aligned}
+$$
+
+受限玻尔兹曼机的训练过程中，正阶段在可见单元受限时，只需要一步计算$$p(h_j=1 \vert \nu)\nu_i$$便可以使网络达到平衡分布，这大大提高了算法效率；负阶段在神经元不受限时，仍然要按照原来的方式让网络达到平稳分布。
+
+下图形象化展示训练RBM的算法，每一步就是一次隐藏层的更新和可见层的重构。对于训练算法的正阶段，$$\langle v_i h_j \rangle^0$$即可得到结果；负阶段需要隐藏层和可见层依次更新很长时间，最后到达热平衡状态即$$\langle v_i h_j \rangle^\infty$$。
+
+![image02]({{site.baseurl}}/image/20191018/rbm_train.png)
+
+## Gibbs采样
+
+对于一个K维随机向量$$X = (x_1, x_2, \cdots, x_K)$$，假设无法求得关于$$X$$的联合分布$$P(x_1, x_2, \cdots, x_k)$$，但我们知道给定其他分量时，第$$k$$个分量的条件分布$$P(x_k \vert x_1, \cdots, x_{k-1}, x_{k+1}, \cdots, x_K)$$。则从$$X$$任意状态开始，迭代地对其分量依次采样，随机变量$$(x_1(n), x_2(n), \cdots, x_K(n))$$将以n的几何级数速度收敛于$$X$$的联合概率分布$$P(X)$$。
+
+## 对比散度算法(CD）
+
+算法的思想是既然目标是让RBM拟合训练样本的分布，考虑让采样过程的状态以训练样本为起点，则某些状态只需要经过很少次的状态转移即可到达平稳状态。首先为可见单元选取一个训练样本初始化，即$$v^{(0)}=\nu$$，然后执行k步Gibbs采样，其中第t步为:
+
+- 利用$$p(h \vert v^{(t-1)})$$采样$$h^{(t-1)}$$
+- 利用$$p(v \vert h^{(t-1)})$$采样$$v^{(t)}$$
+
+经过k步Gibbs采样后得到$$v^{(k)}$$，用它来近似偏导公式中负阶段部分的$$\sum_v$$对应的期望(蒙特卡罗方法)。
+
+$$
+\begin{aligned}
+\frac {\partial ln p(\nu)}{\partial w_{ij}} &= p(h_j=1|\nu)\nu_i - \sum \limits_v p(v)p(h_j=1|v)v_i \\
+&= p(h_j=1|v^{(0)})v^{(0)}_i - p(h_j=1|v^{(k)})v^{(k)}_i \\
+\frac {\partial ln p(\nu)}{\partial a_i} &= \nu_i - \sum \limits_v p(v)v_i \\
+&= v^{(0)}_i - v^{(k)}_i \\
+\frac {\partial ln p(\nu)}{\partial b_i} &= p(h_j=1|\nu) - \sum \limits_v p(v)p(h_j=1|v) \\
+&= p(h_j=1|v^{(0)}) - p(h_j=1|v^{(k)})
+\end{aligned}
+$$
+
+**受限玻尔兹曼机更通俗的解释**
+
+[一起读懂传说中的经典:受限玻尔兹曼机](https://baijiahao.baidu.com/s?id=1599798281463567369)博文中少见的没有罗列公式，而是以图表和浅显的语言来描述其运行原理。
+
+受限玻尔兹曼机一个重要的应用是以无监督的方式重建自身数据。在重建阶段，隐藏层的激活状态变成了反向传递过程中的输入。它们与每个连接边相同的权重相乘，然后在每个可见节点处与可见层的偏置项相加，这些运算的输出就是对原始输入的一个逼近。重建的本质是在预测原始输入的概率分布，修改权重和偏置反映输入数据的结构，并通过隐藏层的激活值进行编码。
+
+![image03]({{site.baseurl}}/image/20191018/kl.png)
+
+以输入狗和大象图片的受限玻尔兹曼机为例，它有784个输入节点($$28 \times 28$$的灰度图片)，两个输出节点，每个节点对应一种动物。在前向传递的过程中(visible -> hidden)，RBM关注在给定的这些像素下，应该向哪个节点发送更强的信号。在反向传递的过程中(hiddent -> visible)，RBM关注在给定一头大象或者狗的条件下，应该期望的像素分布。
+
+受限玻尔兹曼机的激活值代表着它“认为”输入数据看起来的样子，因此RBM更多的被用在降维，自编码或者特征学习等方面。分类，回归，协同过滤等算法的应用还不太了解，参考中找到一篇协同过滤相关的博文。
+
+(BM和RBM的内容还是有些复杂，准备看一下Hinton的课，然后再回来更新相关内容吧)
+
+参考：  
+[百度文库 - Restricted Boltzmann Machine](https://wenku.baidu.com/view/728eee95b1717fd5360cba1aa8114431b90d8ef4.html)  
+[百度文库 - RBM学习笔记](https://wenku.baidu.com/view/db591d95770bf78a652954ee.html)  
+[基于RBM的协同过滤](https://www.cnblogs.com/kemaswill/p/3269138.html)
