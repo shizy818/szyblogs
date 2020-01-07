@@ -27,7 +27,7 @@ Seq2Seq结构中，编码器Encoder把所有输入序列编码成一个统一的
 
 ![image03]({{site.baseurl}}/image/20191227/attention_model.jpg)
 
-1. 首先定义score函数$$f(z_t, h_s)$$可以有三种(**注：公式中$$z_t, h_s$$对应上图中$$z^t, h^s$$**)
+1. 首先定义score函数$$f(z_t, h_s)$$可以有三种，**注：公式中$$z_t, h_s$$对应上图中$$z^t, h^s$$**
     * Dot: $$z_t^T h_s$$
     * General: $$z_t^T W_\alpha h_s$$
     * Concat: $$v_\alpha^T tanh(W_\alpha [z_t; h_s])$$
@@ -51,9 +51,12 @@ Seq2Seq结构中，编码器Encoder把所有输入序列编码成一个统一的
     $$
     h_t = W_c \cdot [c_t; h_t]
     $$
-    * MLP(新添加一个对$$z_t$$的感知单元)
 
     ![image04]({{site.baseurl}}/image/20191227/attention_zt.jpg)
+
+在论文和代码实现中，需要向量化加速计算，于是有矩阵`Q(query), K(key), V(value)`。`query`对应解码器隐藏状态$$z$$，`key`和`value`对应编码器隐藏状态$$h$$。生成状态$$c$$计算如下：
+
+![image05]({{site.baseurl}}/image/20191227/attention_imp.png)
 
 # Transformer
 
@@ -61,21 +64,22 @@ Transformer本质上是一个Encoder-Decoder结构；原文中的Encoders由6层
 
 Self-Attention允许模型看到句子其他位置的词作为辅助信息，从而更好的编码当前词；计算过程如下图：
 
-![image05]({{site.baseurl}}/image/20191227/self_attention.png)
+![image06]({{site.baseurl}}/image/20191227/self_attention.png)
 
 直观上的效果如下图，类似一个相关矩阵。`The animal`对`it`的权重最大，所以`The animal`的词向量很大程度上被合进`it`的编码中。
 
-![image06]({{site.baseurl}}/image/20191227/self_attention_visualization.png)
+![image07]({{site.baseurl}}/image/20191227/self_attention_visualization.png)
 
 Multi-Head Attention相当于h个不同的Self-Attention的集成。每一组Head随机初始化，输入向量被映射到不同的子空间中。当前词在不同组里，和其他不同位置的词发生联系。
 
-![image07]({{site.baseurl}}/image/20191227/multi_head.png)
+![image08]({{site.baseurl}}/image/20191227/multi_head.png)
 
-其他的细节，比如解码器结构/Encoder-Decoder Attention，可以参考下面的链接或者原论文。
+其他的细节，比如解码器结构和Encoder-Decoder Attention，可以参考下面的链接或者原论文。
 
 参考：  
 [The Illustrated Transformer](https://blog.csdn.net/yujianmin1990/article/details/85221271)  
 [The Annotated Transformer](https://nlp.seas.harvard.edu/2018/04/03/attention.html)  
 [Attention原理和源码解析 - 知乎](https://zhuanlan.zhihu.com/p/43493999)  
 [详解Transformer - 知乎](https://zhuanlan.zhihu.com/p/48508221)  
+[Attention和Transformer - 知乎](https://zhuanlan.zhihu.com/p/38485843)
 [完全解析RNN, Seq2Seq, Attention注意力机制](https://zhuanlan.zhihu.com/p/51383402)
