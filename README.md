@@ -1,3 +1,7 @@
-# Jekyll Theme
+---
+title: "About"
+permalink: "/about/"
+layout: page
+---
 
-use [Contrast][https://jekyllthemes.io/theme/contrast]
+攻城狮/程序猿, 'I know nothing'!

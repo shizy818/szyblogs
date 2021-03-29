@@ -1,5 +1,7 @@
 ---
 title:  “谷歌Percolator”
+mathjax: true
+layout: post
 date:   2018-07-23 08:00:12 +0800
 categories: machine learning
 ---

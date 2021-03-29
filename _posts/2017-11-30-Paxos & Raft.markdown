@@ -1,5 +1,7 @@
 ---
 title:  “Paxos & Raft”
+mathjax: true
+layout: post
 date:   2017-11-30 08:00:12 +0800
 categories: distributed system
 ---

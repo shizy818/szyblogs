@@ -1,5 +1,7 @@
 ---
 title:  “微信Paxos类库”
+mathjax: true
+layout: post
 date:   2017-06-10 08:00:12 +0800
 categories: distributed system
 ---

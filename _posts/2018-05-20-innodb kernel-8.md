@@ -1,5 +1,7 @@
 ---
 title:  “InnoDB 内核阅读笔记（八）- 锁”
+mathjax: true
+layout: post
 date:   2018-05-20 08:00:12 +0800
 categories: database
 ---

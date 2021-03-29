@@ -1,5 +1,7 @@
 ---
 title:  “Spark ML - 神经网络”
+mathjax: true
+layout: post
 date:   2018-08-15 08:00:12 +0800
 categories: machine learning
 ---

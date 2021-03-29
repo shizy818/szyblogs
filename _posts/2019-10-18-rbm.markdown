@@ -1,5 +1,7 @@
 ---
 title:  “受限玻尔兹曼机”
+mathjax: true
+layout: post
 date:   2019-10-17 08:00:12 +0800
 categories: deeplearning
 ---

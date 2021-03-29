@@ -1,5 +1,7 @@
 ---
 title:  “DB2 Data Sharing vs Oracle RAC”
+mathjax: true
+layout: post
 date:   2018-01-07 08:00:12 +0800
 categories: database
 ---

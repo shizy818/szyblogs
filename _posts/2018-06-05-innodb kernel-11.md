@@ -1,5 +1,7 @@
 ---
 title:  “InnoDB 内核阅读笔记（十一）- 缓冲池”
+mathjax: true
+layout: post
 date:   2018-06-05 08:00:12 +0800
 categories: database
 ---

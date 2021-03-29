@@ -1,33 +1,31 @@
 title: "那些年跳過的坑"
-author: "colinback"
+author: "shizy818"
 description: "好记性不如烂笔头"
-more: "read more »"
-url: "https://colinback.github.io/"
-baseurl: "/szyblogs"
-paginate: 5
-permalink: pretty
-excerpt_separator: "\n\n\n" # two blank lines
+permalink: /:title/
+lang: "en"
+excerpt_separator: "\n\n\n"
+date_format: "%B %d, %Y"
 
-style:
-  minimalist: false
-  dark: false
+# Layout
 
-navigation:
-  - index.html
-  - archive.html
-  - about.md
+show_excerpts: true        # show article excerpts on the home page
+show_frame: true           # adds a gray frame to the site
+show_sidebar: true        # show a sidebar instead of the usual header
+
+# Menu
+
+navigation:                # accepts {file, title, url, icon, sidebaricon}
+  - {file: "index.html"}
+  - {file: "README.md"}
+
+external:                  # shows a footer with social links - for available icons see fontawesome.com/icons
+  - {title: Mail, icon: envelope, url: "mailto:shizy818@users.noreply.github.com"}
+  - {title: Github, icon: github, url: "https://github.com/shizy818/szyblogs"}
+  - {title: Subscribe, icon: rss, url: "/feed.xml"}
 
 comments:
-#  disqus: "disqus-contrast"
-#  isso: "comments.mysite.org"
+#  disqus_shortname: ""    # see https://disqus.com/
+#  isso_domain: ""         # see https://posativ.org/isso/
 
-links: # see http://fontawesome.io/icons/#brand for all possible icons
-  - github: "https://github.com/colinback/szyblogs"
-  - envelope: "mailto:shizy04@gmail.com"
-
-defaults: [{scope: {path: ""}, values: {layout: "default"}}, {scope: {path: "", type: "posts"}, values: {comments: true}}]
-sass: {style: expanded}
-plugins: [jekyll-feed, jekyll-paginate, jekyll-katex]
-
-# Latex支持
-markdown: kramdown
+plugins:
+ - jekyll-feed

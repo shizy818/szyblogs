@@ -1,5 +1,7 @@
 ---
 title:  “牛顿迭代法”
+mathjax: true
+layout: post
 date:   2018-08-06 08:00:12 +0800
 categories: machine learning
 ---

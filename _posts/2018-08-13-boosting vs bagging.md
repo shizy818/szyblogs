@@ -1,5 +1,7 @@
 ---
 title:  “Scikit ML - 提升算法”
+mathjax: true
+layout: post
 date:   2018-08-13 08:00:12 +0800
 categories: machine learning
 ---

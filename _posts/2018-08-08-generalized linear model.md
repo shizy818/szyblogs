@@ -1,5 +1,7 @@
 ---
 title:  “Spark ML - 广义线性模型”
+mathjax: true
+layout: post
 date:   2018-08-08 08:00:12 +0800
 categories: machine learning
 ---

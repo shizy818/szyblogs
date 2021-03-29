@@ -1,5 +1,7 @@
 ---
 title:  “InnoDB 内核阅读笔记（一）- 基本数据结构”
+mathjax: true
+layout: post
 date:   2018-04-22 08:00:12 +0800
 categories: database
 ---

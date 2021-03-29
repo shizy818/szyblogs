@@ -1,5 +1,7 @@
 ---
 title:  “Mysql在Eclipse上调试”
+mathjax: true
+layout: post
 date:   2018-04-05 08:00:12 +0800
 categories: database
 ---

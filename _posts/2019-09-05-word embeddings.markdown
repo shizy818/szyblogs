@@ -1,5 +1,7 @@
 ---
 title:  “NLP and Word Embeddings”
+mathjax: true
+layout: post
 date:   2019-09-05 08:00:12 +0800
 categories: deeplearning.ai
 ---

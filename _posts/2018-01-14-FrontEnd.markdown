@@ -1,5 +1,7 @@
 ---
 title:  “前端技术综述”
+mathjax: true
+layout: post
 date:   2018-01-14 08:00:12 +0800
 categories: frontend
 ---

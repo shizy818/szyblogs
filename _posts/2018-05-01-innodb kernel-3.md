@@ -1,5 +1,7 @@
 ---
 title:  “InnoDB 内核阅读笔记（三）- 重做日志”
+mathjax: true
+layout: post
 date:   2018-05-01 08:00:12 +0800
 categories: database
 ---

@@ -1,5 +1,7 @@
 ---
 title:  “tj/co模块分析”
+mathjax: true
+layout: post
 date:   2017-09-20 08:00:12 +0800
 categories: javascript
 ---

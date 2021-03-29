@@ -1,5 +1,7 @@
 ---
 title:  “InnoDB 内核阅读笔记（十四）- 服务管理”
+mathjax: true
+layout: post
 date:   2018-06-25 08:00:12 +0800
 categories: database
 ---

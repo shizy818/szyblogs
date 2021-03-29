@@ -1,5 +1,7 @@
 ---
 title:  “InnoDB 内核阅读笔记（六）- 记录”
+mathjax: true
+layout: post
 date:   2018-05-15 08:00:12 +0800
 categories: database
 ---

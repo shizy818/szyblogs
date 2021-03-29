@@ -1,5 +1,7 @@
 ---
 title:  “Hopfield神经网络”
+mathjax: true
+layout: post
 date:   2019-10-15 08:00:12 +0800
 categories: deeplearning
 ---

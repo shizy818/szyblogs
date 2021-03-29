@@ -1,5 +1,7 @@
 ---
 title:  “WebDriver”
+mathjax: true
+layout: post
 date:   2018-01-29 08:00:12 +0800
 categories: testing
 ---

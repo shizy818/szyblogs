@@ -1,5 +1,7 @@
 ---
 title:  “React ComponentWillMount & ComponentWillUnmount”
+mathjax: true
+layout: post
 date:   2018-03-25 08:00:12 +0800
 categories: frontend
 ---

@@ -1,5 +1,7 @@
 ---
 title:  “Spark ML - 决策树”
+mathjax: true
+layout: post
 date:   2018-08-11 08:00:12 +0800
 categories: machine learning
 ---

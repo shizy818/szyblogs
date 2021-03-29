@@ -1,5 +1,7 @@
 ---
 title:  “Regular Expression Group”
+mathjax: true
+layout: post
 date:   2016-08-10 08:00:12 +0800
 categories: regexp
 ---

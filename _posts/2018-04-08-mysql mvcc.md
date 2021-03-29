@@ -1,5 +1,7 @@
 ---
 title:  “Mysql MVCC”
+mathjax: true
+layout: post
 date:   2018-04-08 08:00:12 +0800
 categories: database
 ---

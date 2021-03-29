@@ -1,5 +1,7 @@
 ---
 title:  “Attention & Transformer”
+mathjax: true
+layout: post
 date:   2019-12-27 08:00:12 +0800
 categories: deep learning
 ---

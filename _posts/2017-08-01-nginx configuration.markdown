@@ -1,5 +1,7 @@
 ---
 title:  “Nginx配置参数研究”
+mathjax: true
+layout: post
 date:   2017-08-01 08:00:12 +0800
 categories: nginx
 ---

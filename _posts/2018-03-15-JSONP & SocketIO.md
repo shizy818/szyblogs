@@ -1,5 +1,7 @@
 ---
 title:  “JSONP & SocketIO”
+mathjax: true
+layout: post
 date:   2018-03-15 08:00:12 +0800
 categories: frontend
 ---

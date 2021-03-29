@@ -1,5 +1,7 @@
 ---
 title:  “Reactjs e2e testing with protractor”
+mathjax: true
+layout: post
 date:   2017-08-19 08:00:12 +0800
 categories: reactjs testing
 ---

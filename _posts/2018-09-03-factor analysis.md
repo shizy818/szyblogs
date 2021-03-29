@@ -1,5 +1,7 @@
 ---
 title:  “Spark ML - Factor Analysis”
+mathjax: true
+layout: post
 date:   2018-09-03 08:00:12 +0800
 categories: machine learning
 ---

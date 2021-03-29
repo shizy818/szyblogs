@@ -1,5 +1,7 @@
 ---
 title:  "nodejs debug"
+mathjax: true
+layout: post
 date:   2016-07-29 12:00:12 +0800
 categories: javascript
 ---

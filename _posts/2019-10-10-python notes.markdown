@@ -1,5 +1,7 @@
 ---
 title:  “廖雪峰python笔记”
+mathjax: true
+layout: post
 date:   2019-10-10 08:00:12 +0800
 categories: deeplearning.ai
 ---

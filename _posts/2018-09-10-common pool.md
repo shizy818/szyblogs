@@ -1,5 +1,7 @@
 ---
 title:  “Pool设计”
+mathjax: true
+layout: post
 date:   2018-09-10 08:00:12 +0800
 categories: java
 ---

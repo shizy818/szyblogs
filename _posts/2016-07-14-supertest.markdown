@@ -1,5 +1,7 @@
 ---
 title:  "supertest expect"
+mathjax: true
+layout: post
 date:   2016-07-14 11:00:12 +0800
 categories: javascript
 ---

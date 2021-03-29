@@ -1,5 +1,7 @@
 ---
 title:  “StatsModels - 时间序列ARIMA”
+mathjax: true
+layout: post
 date:   2018-08-03 08:00:12 +0800
 categories: machine learning
 ---

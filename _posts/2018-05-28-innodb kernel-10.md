@@ -1,5 +1,7 @@
 ---
 title:  “InnoDB 内核阅读笔记（十）- 插入缓存”
+mathjax: true
+layout: post
 date:   2018-05-28 08:00:12 +0800
 categories: database
 ---
